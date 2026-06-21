@@ -1,0 +1,1414 @@
+# Copyright (C) 2026 Kitgenix
+# This file is distributed under the GPLv3 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Kitgenix Affiliate Link Manager 1.1.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/kitgenix-affiliate-link-manager\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-26T19:44:37+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: kitgenix-affiliate-link-manager\n"
+
+#. Plugin Name of the plugin
+#: kitgenix-affiliate-link-manager.php
+#: includes/admin/class-settings-ui.php:536
+msgid "Kitgenix Affiliate Link Manager"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: kitgenix-affiliate-link-manager.php
+msgid "https://wordpress.org/plugins/kitgenix-affiliate-link-manager/"
+msgstr ""
+
+#. Description of the plugin
+#: kitgenix-affiliate-link-manager.php
+#: kitgenix-affiliate-link-manager.php:417
+msgid "Manage affiliate short links, branded redirects, and click tracking from one WordPress dashboard."
+msgstr ""
+
+#. Author of the plugin
+#: kitgenix-affiliate-link-manager.php
+#: includes/admin/class-settings-ui.php:535
+#: kitgenix-affiliate-link-manager.php:74
+#: kitgenix-affiliate-link-manager.php:75
+#: kitgenix-affiliate-link-manager.php:436
+msgid "Kitgenix"
+msgstr ""
+
+#. Author URI of the plugin
+#: kitgenix-affiliate-link-manager.php
+msgid "https://kitgenix.com/"
+msgstr ""
+
+#: includes/admin/class-admin-options.php:20
+msgid "Kitgenix Affiliate Link Manager Settings"
+msgstr ""
+
+#: includes/admin/class-admin-options.php:62
+msgid "Warning: that prefix may conflict with WordPress core URLs. If redirects do not work, choose a different prefix and re-save Permalinks."
+msgstr ""
+
+#: includes/admin/class-admin-options.php:72
+msgid "Warning: a Page already uses that slug. The redirect prefix may conflict with existing site URLs."
+msgstr ""
+
+#. translators: %s: local schedule start timestamp.
+#: includes/admin/class-settings-ui.php:134
+#, php-format
+msgid "Starts %s"
+msgstr ""
+
+#. translators: %s: local schedule expiry timestamp.
+#: includes/admin/class-settings-ui.php:142
+#, php-format
+msgid "Expires %s"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:148
+msgid "Fallback URL enabled"
+msgstr ""
+
+#. translators: 1: rotation mode, 2: number of destinations.
+#: includes/admin/class-settings-ui.php:154
+#, php-format
+msgid "%1$s rotation across %2$d destinations"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:155
+msgid "Random"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:155
+msgid "Sequential"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:195
+msgid "No clicks recorded in the last 14 days."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:226
+msgid "Analytics Snapshot"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:227
+msgid "Daily click trends, top sources, and top referrers across all published affiliate links."
+msgstr ""
+
+#. translators: 1: clicks in the last 7 days, 2: clicks in the last 30 days.
+#: includes/admin/class-settings-ui.php:235
+#: includes/admin/class-settings-ui.php:276
+#, php-format
+msgid "Last 7 days: %1$s clicks | Last 30 days: %2$s clicks"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:243
+#: includes/admin/class-settings-ui.php:282
+msgid "Timeline:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:248
+#: includes/admin/class-settings-ui.php:283
+msgid "Top sources:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:249
+#: includes/admin/class-settings-ui.php:283
+msgid "No source data yet."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:253
+#: includes/admin/class-settings-ui.php:284
+msgid "Top referrers:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:254
+#: includes/admin/class-settings-ui.php:284
+msgid "No referrer data yet."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:258
+#: includes/admin/class-settings-ui.php:285
+msgid "Top placements:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:259
+#: includes/admin/class-settings-ui.php:285
+msgid "No placement data yet."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:271
+msgid "Link Analytics"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:298
+#: kitgenix-affiliate-link-manager.php:413
+msgid "Affiliate Link Manager"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:299
+#: includes/core/class-affiliate-link-post-type.php:51
+#: includes/core/class-affiliate-link-post-type.php:61
+msgid "Affiliate Links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:347
+msgid "Link saved."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:355
+msgid "Link deleted."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:363
+msgid "Link duplicated."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:371
+msgid "Click count reset."
+msgstr ""
+
+#. translators: %d: number of affiliate links deleted by the bulk action.
+#: includes/admin/class-settings-ui.php:379
+#, php-format
+msgid "%d link deleted."
+msgid_plural "%d links deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of affiliate link click counts reset by the bulk action.
+#: includes/admin/class-settings-ui.php:389
+#, php-format
+msgid "%d click count reset."
+msgid_plural "%d click counts reset."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/admin/class-settings-ui.php:420
+msgid "Destination health checks are queued. The first automated results will appear here shortly."
+msgstr ""
+
+#. translators: %d: broken affiliate destination count.
+#: includes/admin/class-settings-ui.php:433
+#, php-format
+msgid "%d link has broken destinations."
+msgid_plural "%d links have broken destinations."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: redirecting affiliate destination count.
+#: includes/admin/class-settings-ui.php:440
+#, php-format
+msgid "%d link has redirecting destinations."
+msgid_plural "%d links have redirecting destinations."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: link count still waiting for health results.
+#: includes/admin/class-settings-ui.php:447
+#, php-format
+msgid "%d link is still waiting for its first health check."
+msgid_plural "%d links are still waiting for their first health check."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: local date and time of last health summary refresh.
+#. translators: %s: local date and time of the latest destination health check.
+#: includes/admin/class-settings-ui.php:484
+#: includes/admin/class-settings-ui.php:1353
+#, php-format
+msgid "Last checked %s."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:496
+#: kitgenix-affiliate-link-manager.php:345
+msgid "Sorry, you are not allowed to access this page."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:538
+msgid "Create short redirect links for your affiliate URLs in one place. Share clean links like /go/my-link and track clicks."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:545
+#: includes/admin/class-settings-ui.php:605
+msgid "Documentation"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:546
+msgid "Review Plugin"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:547
+msgid "Support Request"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:548
+#: includes/admin/class-settings-ui.php:1693
+msgid "Support Kitgenix"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:567
+msgid "Links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:568
+#: kitgenix-affiliate-link-manager.php:802
+msgid "Settings"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:569
+msgid "Support"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:570
+msgid "Log"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:599
+msgid "Help and links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:602
+msgid "Need Help?"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:603
+msgid "Open the documentation for setup guidance or send us a support request if you need help configuring the plugin."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:606
+msgid "Request Support"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:611
+msgid "Visit Our Official Facebook Group"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:612
+msgid "Join the Kitgenix community to ask questions, share feedback, and keep up with product updates."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:614
+msgid "Join Group"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:619
+msgid "Follow Us"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:620
+msgid "Keep up with new releases, tutorials, and product news across our channels."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:741
+#: includes/admin/class-settings-ui.php:1448
+msgid "Edit Link"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:741
+#: includes/admin/class-settings-ui.php:863
+msgid "Add Link"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:764
+#: includes/admin/class-settings-ui.php:1234
+#: includes/admin/class-settings-ui.php:1475
+msgid "Name"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:769
+#: includes/admin/class-settings-ui.php:1480
+msgid "Slug"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:770
+#: includes/admin/class-settings-ui.php:1481
+msgid "Auto-generated from name"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:771
+#: includes/admin/class-settings-ui.php:1482
+msgid "Leave blank to auto-generate. You can change it later."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:776
+#: includes/admin/class-settings-ui.php:1487
+msgid "Destination URL"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:781
+#: includes/admin/class-settings-ui.php:1492
+msgid "Start date and time"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:783
+msgid "Leave blank to make the link active immediately. Times use the site timezone."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:787
+#: includes/admin/class-settings-ui.php:1497
+msgid "Expiry date and time"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:789
+msgid "Leave blank to keep the active destination live until you change it."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:793
+#: includes/admin/class-settings-ui.php:1502
+msgid "Fallback URL"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:795
+msgid "Optional. When the link is scheduled but not live yet, or after it expires, visitors are redirected here instead of seeing a 404."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:799
+#: includes/admin/class-settings-ui.php:1507
+msgid "Rotation mode"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:801
+#: includes/admin/class-settings-ui.php:1509
+msgid "No rotation"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:802
+#: includes/admin/class-settings-ui.php:1510
+msgid "Sequential rotation"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:803
+#: includes/admin/class-settings-ui.php:1511
+msgid "Random rotation"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:805
+msgid "Rotation uses the primary destination plus any additional destinations below while the link is active."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:809
+#: includes/admin/class-settings-ui.php:1516
+msgid "Additional rotation destinations"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:810
+msgid ""
+"https://example.com/offer-a\n"
+"https://example.com/offer-b"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:811
+msgid "Add one URL per line. The primary destination stays in the rotation pool automatically."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:815
+#: includes/admin/class-settings-ui.php:1521
+msgid "Link group"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:816
+#: includes/admin/class-settings-ui.php:1522
+msgid "Example: Summer Campaigns"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:817
+msgid "Assign one primary group so larger link libraries can be split into reusable campaign views."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:821
+#: includes/admin/class-settings-ui.php:1526
+msgid "Tags"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:822
+#: includes/admin/class-settings-ui.php:1527
+msgid "Example: email, q3, review-post"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:823
+msgid "Separate tags with commas to label vendors, traffic sources, or campaign types."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:827
+#: includes/admin/class-settings-ui.php:1531
+msgid "Campaign note"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:829
+msgid "Store quick context for the link, such as placement, partner terms, or campaign reminders."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:845
+#: includes/admin/class-settings-ui.php:1536
+msgid "Link rel"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:847
+#: includes/admin/class-settings-ui.php:1538
+msgid "nofollow"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:848
+#: includes/admin/class-settings-ui.php:1539
+msgid "sponsored"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:849
+#: includes/admin/class-settings-ui.php:1540
+msgid "nofollow sponsored"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:851
+#: includes/admin/class-settings-ui.php:1542
+msgid "Use sponsored/nofollow for affiliate links to follow search engine guidelines."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:855
+#: includes/admin/class-settings-ui.php:1546
+msgid "Enabled"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:858
+#: includes/admin/class-settings-ui.php:1549
+msgid "This link is active and will redirect"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:860
+msgid "Disable to temporarily stop redirects without deleting the link (disabled links return 404)."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:863
+msgid "Update Link"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:866
+#: includes/admin/class-settings-ui.php:1554
+msgid "Cancel"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:900
+msgid "Campaign views"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:902
+msgid "All links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:918
+#: includes/admin/class-settings-ui.php:941
+msgid "Ungrouped"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:928
+msgid "All Links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:929
+msgid "Search, filter, and review links by campaign group, tags, notes, and recent analytics context."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:936
+msgid "Search links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:937
+msgid "Search links, groups, tags, or notes..."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:938
+msgid "Filter by group"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:940
+msgid "All groups"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:952
+msgid "Filter by tag"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:954
+msgid "All tags"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:970
+msgid "Filter"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:972
+msgid "Clear"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1148
+msgid "No links match the current campaign filters."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1150
+msgid "No links yet. Add your first one on the left."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1219
+msgid "Select bulk action"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1221
+msgid "Bulk actions"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1222
+#: includes/admin/class-settings-ui.php:1396
+#: includes/admin/class-settings-ui.php:1555
+msgid "Delete"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1223
+#: includes/admin/class-settings-ui.php:1395
+msgid "Reset clicks"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1224
+msgid "Export CSV"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1226
+msgid "Apply"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1233
+msgid "Select all links"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1235
+msgid "Destination"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1236
+msgid "Short URL"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1237
+msgid "Clicks"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1238
+msgid "Actions"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1337
+msgid "Scheduled"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1339
+msgid "Expired"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1342
+msgid "Health Alert"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1344
+msgid "Health Warning"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1358
+msgid "Health check pending."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1364
+msgid "(Disabled)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1372
+msgid "Copy"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1372
+msgid "Copied"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1393
+msgid "Edit"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1394
+msgid "Duplicate"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1395
+msgid "Reset click count to 0?"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1396
+msgid "Move this link to the Trash?"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1430
+msgid "&laquo;"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1431
+msgid "&raquo;"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1449
+msgid "Close"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1452
+msgid "Edit affiliate link details."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1557
+msgid "Save Changes"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1591
+msgid "Link prefix"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1593
+msgid "Example: go → https://example.com/go/my-link"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1597
+#: includes/admin/class-settings-ui.php:1666
+msgid "Redirect type"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1599
+msgid "307 (Temporary – recommended)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1600
+msgid "302 (Temporary)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1601
+msgid "301 (Permanent)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1606
+msgid "Links per page"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1608
+msgid "Controls how many links are shown per page in the Links tab (10–200)."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1612
+msgid "Data removal"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1615
+msgid "Delete all affiliate links and click data when the plugin is uninstalled"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1617
+msgid "By default, uninstall keeps your links/click data. Enable this only if you want a clean uninstall."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1620
+msgid "Save Settings"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1645
+msgid "Copy plugin link:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1647
+msgid "Kitgenix Supporter (£4/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1648
+msgid "Kitgenix Plus (£8/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1649
+msgid "Kitgenix Pro Supporter (£19/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1650
+msgid "Kitgenix Agency (£37/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1651
+msgid "Kitgenix Partner (£75/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1652
+msgid "Kitgenix YouTube Sponsor (£730/month)"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1656
+msgid "Affiliate links managed"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1658
+msgid "Published short links currently active on your site."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1661
+msgid "Tracked redirects"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1663
+msgid "Recorded clicks across your managed affiliate links."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1668
+msgid "The response code currently handling outbound traffic."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1672
+msgid "You already have a measurable number of short affiliate links under management from one place."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1673
+msgid "Tracked redirects show how often visitors are actually using those links."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1674
+msgid "Your redirect status controls how outbound affiliate traffic is handled for browsers and search engines."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1677
+msgid "Compatibility updates for new WordPress / WooCommerce releases"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1678
+msgid "Bug fixes, edge-case testing, and better affiliate-link coverage"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1679
+msgid "Security hardening and ongoing performance improvements"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1680
+msgid "Documentation upgrades and faster, clearer support responses"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1683
+msgid "No paid features locked behind donations"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1684
+msgid "No tracking or invasive upsells"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1685
+msgid "Support is always optional, and genuinely appreciated."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1692
+msgid "Help keep Kitgenix independent"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1694
+msgid "We try to keep Kitgenix plugins lightweight, privacy-friendly, and free for everyone. If Affiliate Link Manager saves you admin time or helps prevent messy raw affiliate URLs across your site, please consider supporting Kitgenix. Your support directly funds ongoing development, testing, and maintenance so we can keep features open and updates frequent."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1697
+msgid "Support this plugin"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1699
+msgid "Buy Me a Coffee"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1700
+msgid "Become a member"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1702
+msgid "Via Buy Me a Coffee. Cancel anytime."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1708
+msgid "Your site impact"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1709
+msgid "These stats show how Affiliate Link Manager is currently working on your site:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1724
+msgid "Support options"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1725
+msgid "Buy Me a Coffee: A quick way to say thanks and help fund the next round of improvements."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1726
+msgid "A membership helps keep development consistent if you rely on Affiliate Link Manager day-to-day."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1749
+msgid "What this means"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1758
+msgid "What your support helps with"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1767
+msgid "Not in a position to donate?"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1768
+msgid "No worries - you can still massively help:"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1769
+msgid "Reviews help others discover the plugin and keep the project sustainable. Sharing the plugin with other site owners and sending strong support reports both help the project move faster."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1771
+msgid "Leave a WordPress.org review"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1772
+msgid "Copy plugin link"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1773
+msgid "Open support / feature request"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1778
+msgid "A small note on trust & privacy"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1784
+msgid "Thank you for supporting Kitgenix."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1794
+#: includes/admin/class-settings-ui.php:1876
+#: includes/admin/class-settings-ui.php:1920
+#: includes/admin/class-settings-ui.php:1994
+#: includes/admin/class-settings-ui.php:2038
+msgid "Forbidden"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1802
+#: includes/admin/class-settings-ui.php:1805
+#: includes/admin/class-settings-ui.php:1882
+#: includes/admin/class-settings-ui.php:1885
+#: includes/admin/class-settings-ui.php:1926
+#: includes/admin/class-settings-ui.php:1929
+#: includes/admin/class-settings-ui.php:2000
+#: includes/admin/class-settings-ui.php:2003
+#: includes/admin/class-settings-ui.php:2045
+#: includes/admin/class-settings-ui.php:2048
+msgid "Invalid nonce"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:1935
+msgid "Invalid link."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2086
+msgid "Please select a bulk action."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2093
+msgid "Please select at least one link."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2154
+msgid "No changes were made."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2171
+msgid "Event log cleared."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2180
+msgid "Activity Log"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2181
+msgid "A record of recent plugin events. Entries show the timestamp, context, outcome, and a plain-English note. IP addresses and sensitive data are never stored here."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2184
+msgid "Clear all log entries?"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2184
+msgid "Clear log"
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2191
+msgid "Permission denied."
+msgstr ""
+
+#: includes/admin/class-settings-ui.php:2200
+msgid "Plugin settings were saved via the admin settings page."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:52
+msgid "Affiliate Link"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:53
+msgid "Add New"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:54
+msgid "Add New Affiliate Link"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:55
+msgid "Edit Affiliate Link"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:56
+msgid "New Affiliate Link"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:57
+msgid "View Affiliate Link"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:58
+msgid "Search Affiliate Links"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:59
+msgid "No affiliate links found."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:60
+msgid "No affiliate links found in Trash."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:89
+#: includes/core/class-affiliate-link-post-type.php:97
+msgid "Link Groups"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:90
+msgid "Link Group"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:91
+msgid "Search Link Groups"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:92
+msgid "All Link Groups"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:93
+msgid "Edit Link Group"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:94
+msgid "Update Link Group"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:95
+msgid "Add New Link Group"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:96
+msgid "New Link Group Name"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:117
+#: includes/core/class-affiliate-link-post-type.php:129
+msgid "Link Tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:118
+msgid "Link Tag"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:119
+msgid "Search Link Tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:120
+msgid "Popular Link Tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:121
+msgid "All Link Tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:122
+msgid "Edit Link Tag"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:123
+msgid "Update Link Tag"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:124
+msgid "Add New Link Tag"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:125
+msgid "New Link Tag Name"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:126
+msgid "Separate link tags with commas"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:127
+msgid "Add or remove link tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:128
+msgid "Choose from the most used link tags"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:642
+msgid "Please enter a name for the link."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:645
+msgid "Please enter a valid destination URL."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:648
+msgid "Please enter a valid start date and time."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:651
+msgid "Please enter a valid expiry date and time."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:654
+msgid "Expiry must be later than the start date and time."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:657
+msgid "Please enter a valid fallback URL."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:660
+msgid "Each rotation destination must be a valid URL."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:668
+msgid "That slug is already in use."
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:709
+msgid "Could not save the link because your database rejected some characters in the Name (usually emoji). Remove emoji/special characters and try again, or enable utf8mb4 on your database."
+msgstr ""
+
+#. translators: %s: database error message
+#: includes/core/class-affiliate-link-post-type.php:718
+#, php-format
+msgid "Could not insert post into the database. Database said: %s"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:837
+msgid "Invalid affiliate link."
+msgstr ""
+
+#. translators: %s: original link name
+#: includes/core/class-affiliate-link-post-type.php:853
+#, php-format
+msgid "Copy of %s"
+msgstr ""
+
+#: includes/core/class-affiliate-link-post-type.php:1290
+msgid "Import items must be objects or associative arrays."
+msgstr ""
+
+#: includes/core/class-analytics.php:286
+msgid "Direct"
+msgstr ""
+
+#: includes/core/class-analytics.php:291
+msgid "Unassigned"
+msgstr ""
+
+#: includes/core/class-cli-command.php:21
+#: includes/core/class-rest-api.php:273
+msgid "Affiliate link not found."
+msgstr ""
+
+#. translators: 1: link ID, 2: link slug
+#: includes/core/class-cli-command.php:193
+#, php-format
+msgid "Created affiliate link #%1$d (%2$s)."
+msgstr ""
+
+#. translators: %d: link ID
+#: includes/core/class-cli-command.php:267
+#, php-format
+msgid "Updated affiliate link #%d."
+msgstr ""
+
+#: includes/core/class-cli-command.php:290
+msgid "Affiliate link disabled."
+msgstr ""
+
+#: includes/core/class-cli-command.php:310
+msgid "Affiliate link enabled."
+msgstr ""
+
+#: includes/core/class-cli-command.php:330
+msgid "Affiliate link moved to the Trash."
+msgstr ""
+
+#: includes/core/class-cli-command.php:351
+msgid "Import file is not readable."
+msgstr ""
+
+#: includes/core/class-cli-command.php:367
+msgid "JSON import files must decode to an array, or to an object containing rows or links."
+msgstr ""
+
+#: includes/core/class-cli-command.php:373
+msgid "Could not open the CSV import file."
+msgstr ""
+
+#: includes/core/class-cli-command.php:484
+msgid "Could not write the export file."
+msgstr ""
+
+#. translators: 1: export count, 2: file path
+#: includes/core/class-cli-command.php:489
+#, php-format
+msgid "Exported %1$d links to %2$s."
+msgstr ""
+
+#. translators: 1: created count, 2: updated count, 3: failed count
+#: includes/core/class-cli-command.php:540
+#, php-format
+msgid "Import finished with failures: %1$d created, %2$d updated, %3$d failed."
+msgstr ""
+
+#. translators: 1: created count, 2: updated count
+#: includes/core/class-cli-command.php:552
+#, php-format
+msgid "Imported affiliate links: %1$d created, %2$d updated."
+msgstr ""
+
+#: includes/core/class-event-log.php:65
+msgid "No recent events recorded yet."
+msgstr ""
+
+#: includes/core/class-event-log.php:81
+msgid "Unknown time"
+msgstr ""
+
+#: includes/core/class-health-checks.php:201
+msgid "No destinations were available to check."
+msgstr ""
+
+#. translators: 1: broken destination count, 2: redirecting destination count.
+#: includes/core/class-health-checks.php:250
+#, php-format
+msgid "%1$d broken destinations and %2$d redirecting destinations detected."
+msgstr ""
+
+#. translators: %d: broken destination count.
+#: includes/core/class-health-checks.php:257
+#, php-format
+msgid "%d broken destination detected."
+msgid_plural "%d broken destinations detected."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: redirecting destination count.
+#: includes/core/class-health-checks.php:265
+#, php-format
+msgid "%d redirecting destination detected."
+msgid_plural "%d redirecting destinations detected."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/core/class-health-checks.php:270
+#: includes/core/class-health-checks.php:421
+msgid "Destination responded successfully."
+msgstr ""
+
+#. translators: %d: number of checked destinations.
+#: includes/core/class-health-checks.php:273
+#, php-format
+msgid "All %d destinations responded successfully."
+msgstr ""
+
+#. translators: %s: network error message.
+#: includes/core/class-health-checks.php:335
+#, php-format
+msgid "Health check failed: %s"
+msgstr ""
+
+#: includes/core/class-health-checks.php:354
+msgid "Destination entered a redirect loop or exceeded the redirect limit."
+msgstr ""
+
+#: includes/core/class-health-checks.php:365
+msgid "Destination returned an invalid redirect target."
+msgstr ""
+
+#: includes/core/class-health-checks.php:384
+msgid "No response was recorded during the health check."
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: includes/core/class-health-checks.php:396
+#, php-format
+msgid "Destination returned HTTP %d."
+msgstr ""
+
+#. translators: %d: redirect hop count.
+#: includes/core/class-health-checks.php:410
+#, php-format
+msgid "Destination redirected %d time before loading."
+msgid_plural "Destination redirected %d times before loading."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/core/class-rest-api.php:113
+msgid "Sorry, you are not allowed to manage affiliate links."
+msgstr ""
+
+#: includes/core/class-rest-api.php:337
+msgid "The import request must include a links array."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:357
+msgid "CAPTCHA for Cloudflare Turnstile"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:361
+msgid "Add Cloudflare Turnstile CAPTCHA to WordPress, WooCommerce, Elementor, and popular form plugins."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:365
+msgid "Custom Tabs for WooCommerce"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:369
+msgid "Add custom WooCommerce product tabs with per-product content, global tabs, and lightweight controls."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:373
+msgid "Document Manager"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:377
+msgid "Manage document downloads with stable links, version history, and private file access."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:381
+msgid "Order Tracking for WooCommerce"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:385
+msgid "Add WooCommerce order tracking, multi-shipment support, email tracking links, and a public customer tracking page."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:389
+msgid "PDF Invoicing for WooCommerce"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:393
+msgid "Generate WooCommerce PDF invoices, receipts, packing slips, and credit notes with secure downloads and configurable email attachments."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:397
+msgid "Stock Sync for WooCommerce"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:401
+msgid "Sync WooCommerce stock between stores with secure master-child inventory updates and signed REST requests."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:405
+msgid "MultiStore Sync"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:409
+msgid "Sync WooCommerce products, prices, media, and metadata between multiple stores with a secure master-child architecture."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:438
+msgid "Discover and manage every Kitgenix plugin from one screen."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:439
+msgid "Install, activate, open, and review Kitgenix plugins."
+msgstr ""
+
+#. translators: %s is the number of active installs and may include a thousands separator, e.g. "1,234". The "+" suffix is literal.
+#: kitgenix-affiliate-link-manager.php:476
+#, php-format
+msgid "%s+ installs"
+msgstr ""
+
+#. translators: %s is the average rating out of 5 with one decimal place, e.g. "4.5". The star symbol (★) precedes the number.
+#: kitgenix-affiliate-link-manager.php:485
+#, php-format
+msgid "★ %s/5"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:490
+msgid "Not installed"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:492
+msgid "Active"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:494
+msgid "Installed (Inactive)"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:514
+msgid "Install"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:521
+msgid "Activate"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:523
+msgid "You do not have permission to activate plugins."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:528
+msgid "Open"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:533
+msgid "Details"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:537
+msgid "Review"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:538
+msgid "Support Forum"
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:681
+msgid "Kitgenix Affiliate Link Manager: core loader not found. Please reinstall the plugin."
+msgstr ""
+
+#. translators: 1: PHP version, 2: WordPress version
+#: kitgenix-affiliate-link-manager.php:698
+#, php-format
+msgid "Kitgenix Affiliate Link Manager requires PHP %1$s+ and WordPress %2$s+."
+msgstr ""
+
+#: kitgenix-affiliate-link-manager.php:704
+msgid "Plugin Activation Error"
+msgstr ""
