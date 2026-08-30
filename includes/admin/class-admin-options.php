@@ -26,13 +26,19 @@ class Admin_Options {
     }
 
     public static function sanitize( $settings ): array {
-        $nonce = '';
+        // This sanitize_callback runs on every update_option() call for this option, not just
+        // submissions through options.php (e.g. WP-CLI `option update`, a future REST route, or
+        // another integration calling update_option() directly) – options.php already verifies
+        // its own Settings API nonce before invoking this callback, so only reject here when our
+        // extra form nonce field is present and fails to verify (a stale/forged form submission);
+        // a request with no nonce field at all simply isn't our settings form and should still be
+        // sanitized normally rather than silently discarded.
         if ( isset( $_POST['kitgenix_affiliate_link_manager_settings_nonce'] ) ) {
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified below
             $nonce = \sanitize_text_field( \wp_unslash( $_POST['kitgenix_affiliate_link_manager_settings_nonce'] ) );
-        }
-        if ( empty( $nonce ) || ! \wp_verify_nonce( $nonce, 'kitgenix_affiliate_link_manager_settings_save' ) ) {
-            return (array) \get_option( Settings::OPTION_NAME, [] );
+            if ( ! \wp_verify_nonce( $nonce, 'kitgenix_affiliate_link_manager_settings_save' ) ) {
+                return (array) \get_option( Settings::OPTION_NAME, [] );
+            }
         }
 
         $settings = \is_array( $settings ) ? $settings : [];
@@ -87,6 +93,18 @@ class Admin_Options {
         $clean['links_per_page'] = $per_page;
 
         $clean['delete_data_on_uninstall'] = ! empty( $settings['delete_data_on_uninstall'] ) ? 1 : 0;
+
+        $frequency = isset( $settings['health_check_frequency'] ) ? \sanitize_key( (string) $settings['health_check_frequency'] ) : 'hourly';
+        $clean['health_check_frequency'] = \in_array( $frequency, [ 'thirty_minutes', 'hourly', 'twicedaily', 'daily' ], true ) ? $frequency : 'hourly';
+
+        $timeout = isset( $settings['health_check_timeout'] ) ? (int) $settings['health_check_timeout'] : 8;
+        if ( $timeout < 3 ) {
+            $timeout = 3;
+        }
+        if ( $timeout > 30 ) {
+            $timeout = 30;
+        }
+        $clean['health_check_timeout'] = $timeout;
 
         return $clean;
     }

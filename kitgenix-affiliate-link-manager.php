@@ -8,13 +8,13 @@
  * Author Support URI: https://kitgenix.com/plugins/kitgenix-affiliate-link-manager/support
  * Feature Request URI: https://kitgenix.com/plugins/kitgenix-affiliate-link-manager/feature-request
  * Description:       Manage affiliate short links, branded redirects, and click tracking from one WordPress dashboard.
- * Version:           1.1.3
+ * Version:           2.0.0
  * Requires at least: 6.0
- * Tested up to:      7.0
+ * Tested up to:      7.1
  * Requires PHP:      8.1
  * Author:            Kitgenix
  * Author URI:        https://kitgenix.com/
- * Donate link:       https://buymeacoffee.com/kitgenix
+ * Donate link:       https://www.paypal.com/donate/?hosted_button_id=KALF36K6JJ9B2
  * License:           GPLv3 or later
  * License URI:       https://www.gnu.org/licenses/gpl-3.0.html
  * Text Domain:       kitgenix-affiliate-link-manager
@@ -31,8 +31,8 @@ if ( ! function_exists( 'kitgenix_get_admin_menu_icon' ) ) {
     function kitgenix_get_admin_menu_icon( string $plugin_file ): string {
         $plugin_dir = dirname( $plugin_file ) . '/';
         $icon_paths = [
-            $plugin_dir . 'assets/images/logos/kitgenix-wordpress-admin-icon.svg',
-            $plugin_dir . 'assets/images/logos/kitgenix-custom-wordpress-admin-icon.svg',
+            $plugin_dir . 'assets/images/logos/kitgenix-wordpress-admin-menu-favicon.svg',
+            $plugin_dir . 'assets/images/logos/kitgenix-black-favicon.svg',
         ];
 
         foreach ( $icon_paths as $icon_path ) {
@@ -84,6 +84,44 @@ if ( ! function_exists( 'kitgenix_ensure_admin_menu' ) ) {
 
 // Ensure the shared Kitgenix top-level menu exists.
 add_action( 'admin_menu', 'kitgenix_ensure_admin_menu', 5 );
+
+if ( ! function_exists( 'kitgenix_affiliate_link_manager_register_icons' ) ) {
+    /**
+     * Register this plugin's brand icon with WordPress 7.1's Icon Registration API
+     * (wp_register_icon_collection()/wp_register_icon()), so it is discoverable via
+     * wp_get_icon('kitgenix/mark') and the /wp-json/wp/v2/icons REST endpoint.
+     *
+     * This is unrelated to the wp-admin top-level menu icon (add_menu_page()'s
+     * icon_url argument still only accepts a dashicon class, a URL, or a base64
+     * data: URI – the Icon API does not feed into it), so the menu icon below keeps
+     * using kitgenix_get_admin_menu_icon() as before, on every supported WP version.
+     */
+    function kitgenix_affiliate_link_manager_register_icons(): void {
+        if ( ! function_exists( 'wp_register_icon_collection' ) || ! function_exists( 'wp_register_icon' ) ) {
+            return;
+        }
+
+        wp_register_icon_collection(
+            'kitgenix',
+            [
+                'label'       => __( 'Kitgenix', 'kitgenix-affiliate-link-manager' ),
+                'description' => __( 'Brand icons shared across Kitgenix plugins.', 'kitgenix-affiliate-link-manager' ),
+            ]
+        );
+
+        $icon_path = dirname( __FILE__ ) . '/assets/images/logos/kitgenix-wordpress-admin-menu-favicon.svg';
+        if ( is_readable( $icon_path ) ) {
+            wp_register_icon(
+                'kitgenix/mark',
+                [
+                    'label'     => __( 'Kitgenix', 'kitgenix-affiliate-link-manager' ),
+                    'file_path' => $icon_path,
+                ]
+            );
+        }
+    }
+}
+add_action( 'init', 'kitgenix_affiliate_link_manager_register_icons' );
 
 if ( ! function_exists( 'kitgenix_hub_get_wporg_active_installs' ) ) {
     /**
@@ -402,11 +440,19 @@ if ( ! function_exists( 'kitgenix_render_admin_page' ) ) {
             ],
             [
                 'id'       => 'multistore',
-                'name'     => __( 'MultiStore Sync', 'kitgenix-affiliate-link-manager' ),
-                'slug'     => 'kitgenix-multistore-sync',
-                'file'     => 'kitgenix-multistore-sync/kitgenix-multistore-sync.php',
-                'page'     => 'kitgenix-multistore-sync',
+                'name'     => __( 'MultiStore for WooCommerce', 'kitgenix-affiliate-link-manager' ),
+                'slug'     => 'kitgenix-multistore-sync-for-woocommerce',
+                'file'     => 'kitgenix-multistore-sync-for-woocommerce/kitgenix-multistore-sync-for-woocommerce.php',
+                'page'     => 'kitgenix-multistore-sync-for-woocommerce',
                 'requires' => __( 'Sync WooCommerce products, prices, media, and metadata between multiple stores with a secure master-child architecture.', 'kitgenix-affiliate-link-manager' ),
+            ],
+            [
+                'id'       => 'image_optimizer',
+                'name'     => __( 'Image Optimizer', 'kitgenix-affiliate-link-manager' ),
+                'slug'     => 'kitgenix-image-optimizer',
+                'file'     => 'kitgenix-image-optimizer/kitgenix-image-optimizer.php',
+                'page'     => 'kitgenix-image-optimizer',
+                'requires' => __( 'Optimize, compress, and resize images in your WordPress media library with automatic on-upload processing and bulk optimization tools.', 'kitgenix-affiliate-link-manager' ),
             ],
             [
                 'id'       => 'affiliate',
@@ -427,15 +473,26 @@ if ( ! function_exists( 'kitgenix_render_admin_page' ) ) {
         $wporg_active_installs = kitgenix_hub_get_wporg_active_installs( $slugs );
         $wporg_ratings        = kitgenix_hub_get_wporg_ratings( $slugs );
         $wporg_media          = kitgenix_hub_get_wporg_media( $slugs );
-        $logo_url             = plugins_url( 'assets/images/logos/kitgenix-favicon-purple.svg', __FILE__ );
+        $logo_url             = plugins_url( 'assets/images/logos/kitgenix-primary-favicon.svg', __FILE__ );
 
-        echo '<div class="wrap plugin-install-php kitgenix-hub-wrap">'
-            . '<div class="kitgenix-hub">'
-            . '<div class="kitgenix-hub-header">'
+        echo '<div class="wrap kitgenix-admin-app plugin-install-php" id="kitgenix-hub-app">';
+
+        // Apply the same manually-chosen theme used on this plugin's own Settings/Links
+        // pages (persisted in localStorage by kitgenix-admin-tabs.js) before first paint, so
+        // switching to the Hub page does not visually flip back to the OS-level preference.
+        // No toggle button is rendered here on purpose – this only syncs an existing choice.
+        // Safe to run immediately: the wrapping #kitgenix-hub-app element above already
+        // exists in the DOM by the time the parser reaches this inline script.
+        echo '<script>(function(){try{var t=window.localStorage.getItem("kitgenixAdminTheme");if(t!=="dark"&&t!=="light"){t=(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";}document.getElementById("kitgenix-hub-app").setAttribute("data-kitgenix-theme",t);}catch(e){}})();</script>';
+
+        echo '<div class="kitgenix-hub-header">'
             . '<div class="kitgenix-hub-brand">'
-            . '<img class="kitgenix-hub-logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr__( 'Kitgenix', 'kitgenix-affiliate-link-manager' ) . '" />'
+            . '<span class="kitgenix-topbar-brand">'
+            . '<img class="kitgenix-hub-logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr__( 'Kitgenix', 'kitgenix-affiliate-link-manager' ) . '" width="30" height="30" />'
+            . '</span>'
+            . '<span class="kitgenix-topbar-divider" aria-hidden="true"></span>'
             . '<div class="kitgenix-hub-brand-copy">'
-            . '<h1 class="kitgenix-hub-title">' . esc_html__( 'Discover and manage every Kitgenix plugin from one screen.', 'kitgenix-affiliate-link-manager' ) . '</h1>'
+            . '<h1 class="kitgenix-hub-title">' . esc_html__( 'Kitgenix', 'kitgenix-affiliate-link-manager' ) . '</h1>'
             . '<p class="kitgenix-hub-description">' . esc_html__( 'Install, activate, open, and review Kitgenix plugins.', 'kitgenix-affiliate-link-manager' ) . '</p>'
             . '</div>'
             . '</div>'
@@ -452,6 +509,8 @@ if ( ! function_exists( 'kitgenix_render_admin_page' ) ) {
             . '<a href="https://github.com/kitgenix" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"><img src="' . esc_url( plugins_url( 'assets/images/social-media/github-solid.svg', __FILE__ ) ) . '" alt="" width="13" height="13" aria-hidden="true" /><span class="screen-reader-text">GitHub</span></a>'
             . '</div>'
             . '</div>'
+            . '<div class="kitgenix-hub-wrap">'
+            . '<div class="kitgenix-hub">'
             . '<div class="kitgenix-hub-grid">';
         foreach ( $plugins as $p ) {
             $id        = (string) $p['id'];
@@ -573,7 +632,7 @@ if ( ! function_exists( 'kitgenix_render_admin_page' ) ) {
                 . '</div>';
         }
 
-        echo '</div></div></div>';
+        echo '</div></div></div></div>';
     }
 }
 
@@ -583,15 +642,15 @@ if ( ! function_exists( 'kitgenix_affiliate_link_manager_register_admin_ui_style
             return;
         }
 
-        if ( function_exists( 'wp_style_is' ) && wp_style_is( 'kitgenix-admin-ui', 'registered' ) ) {
+        if ( function_exists( 'wp_style_is' ) && wp_style_is( 'kitgenix-affiliate-link-manager-admin-ui', 'registered' ) ) {
             return;
         }
 
-        $ver      = defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '1.1.3';
+        $ver      = defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '2.0.0';
         $css_file = plugin_dir_path( __FILE__ ) . 'assets/css/kitgenix-admin-ui.css';
         $css_ver  = file_exists( $css_file ) ? (string) filemtime( $css_file ) : $ver;
 
-        wp_register_style( 'kitgenix-admin-ui', plugins_url( 'assets/css/kitgenix-admin-ui.css', __FILE__ ), [], $css_ver );
+        wp_register_style( 'kitgenix-affiliate-link-manager-admin-ui', plugins_url( 'assets/css/kitgenix-admin-ui.css', __FILE__ ), [], $css_ver );
     }
 }
 add_action( 'admin_enqueue_scripts', 'kitgenix_affiliate_link_manager_register_admin_ui_style', 5 );
@@ -613,19 +672,19 @@ add_action( 'admin_enqueue_scripts', function ( string $hook_suffix ): void {
         return;
     }
 
-    $ver = defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '1.1.3';
+    $ver = defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '2.0.0';
     wp_register_style( 'kitgenix-hub', plugins_url( 'assets/css/kitgenix-hub.css', __FILE__ ), [], $ver );
     wp_enqueue_style( 'kitgenix-hub' );
 
-    wp_register_style( 'kitgenix-admin-ui', plugins_url( 'assets/css/kitgenix-admin-ui.css', __FILE__ ), [], $ver );
-    wp_enqueue_style( 'kitgenix-admin-ui' );
+    wp_register_style( 'kitgenix-affiliate-link-manager-admin-ui', plugins_url( 'assets/css/kitgenix-admin-ui.css', __FILE__ ), [], $ver );
+    wp_enqueue_style( 'kitgenix-affiliate-link-manager-admin-ui' );
 } );
 
 /**
  * Constants (guarded)
  */
 if ( ! defined( 'KitgenixAffiliateLinkManager_Version' ) ) {
-    define( 'KitgenixAffiliateLinkManager_Version', '1.1.3' );
+    define( 'KitgenixAffiliateLinkManager_Version', '2.0.0' );
 }
 if ( ! defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ) {
     define( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION', KitgenixAffiliateLinkManager_Version );
@@ -635,6 +694,9 @@ if ( ! defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_FILE' ) ) {
 }
 if ( ! defined( 'KitgenixAffiliateLinkManager_Path' ) ) {
     define( 'KitgenixAffiliateLinkManager_Path', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_DIR' ) ) {
+    define( 'KITGENIX_AFFILIATE_LINK_MANAGER_DIR', KitgenixAffiliateLinkManager_Path );
 }
 if ( ! defined( 'KitgenixAffiliateLinkManager_URL' ) ) {
     define( 'KitgenixAffiliateLinkManager_URL', plugin_dir_url( __FILE__ ) );

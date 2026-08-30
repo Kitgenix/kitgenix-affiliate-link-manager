@@ -597,6 +597,15 @@ class Affiliate_Link_Post_Type {
     }
 
     /**
+     * Record a link save/validation failure to the event log and return the error unchanged,
+     * so callers can keep using `return self::log_link_error( new \WP_Error( ... ) );`.
+     */
+    private static function log_link_error( \WP_Error $error ): \WP_Error {
+        Event_Log::record( 'link-save', 'error', $error->get_error_message(), (string) $error->get_error_code() );
+        return $error;
+    }
+
+    /**
      * Create or update an affiliate link.
      *
      * @return int|\WP_Error Post ID or WP_Error.
@@ -639,25 +648,25 @@ class Affiliate_Link_Post_Type {
         }
 
         if ( $title === '' ) {
-            return new \WP_Error( 'kitgenix_affiliate_missing_title', \__( 'Please enter a name for the link.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_missing_title', \__( 'Please enter a name for the link.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( $destination_url === '' || ! \wp_http_validate_url( $destination_url ) ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_url', \__( 'Please enter a valid destination URL.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_url', \__( 'Please enter a valid destination URL.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( ! $starts_valid ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_start', \__( 'Please enter a valid start date and time.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_start', \__( 'Please enter a valid start date and time.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( ! $expires_valid ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_expiry', \__( 'Please enter a valid expiry date and time.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_expiry', \__( 'Please enter a valid expiry date and time.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( $starts_at !== null && $expires_at !== null && $expires_at <= $starts_at ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_schedule', \__( 'Expiry must be later than the start date and time.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_schedule', \__( 'Expiry must be later than the start date and time.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( $fallback_url !== '' && ! \wp_http_validate_url( $fallback_url ) ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_fallback_url', \__( 'Please enter a valid fallback URL.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_fallback_url', \__( 'Please enter a valid fallback URL.', 'kitgenix-affiliate-link-manager' ) ) );
         }
         if ( ! $rotation_valid ) {
-            return new \WP_Error( 'kitgenix_affiliate_invalid_rotation_destination', \__( 'Each rotation destination must be a valid URL.', 'kitgenix-affiliate-link-manager' ) );
+            return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_invalid_rotation_destination', \__( 'Each rotation destination must be a valid URL.', 'kitgenix-affiliate-link-manager' ) ) );
         }
 
         // When a slug is explicitly provided, prevent duplicates.
@@ -665,7 +674,7 @@ class Affiliate_Link_Post_Type {
         if ( $slug !== '' ) {
             $existing = \get_page_by_path( $slug, 'OBJECT', self::POST_TYPE );
             if ( $existing instanceof \WP_Post && ( ! $post_id || (int) $existing->ID !== $post_id ) ) {
-                return new \WP_Error( 'kitgenix_affiliate_slug_exists', \__( 'That slug is already in use.', 'kitgenix-affiliate-link-manager' ) );
+                return self::log_link_error( new \WP_Error( 'kitgenix_affiliate_slug_exists', \__( 'That slug is already in use.', 'kitgenix-affiliate-link-manager' ) ) );
             }
         }
 
@@ -704,25 +713,25 @@ class Affiliate_Link_Post_Type {
                 $last_error = isset( $wpdb ) && isset( $wpdb->last_error ) ? (string) $wpdb->last_error : '';
 
                 if ( $last_error !== '' && \stripos( $last_error, 'Incorrect string value' ) !== false ) {
-                    return new \WP_Error(
+                    return self::log_link_error( new \WP_Error(
                         'kitgenix_affiliate_db_charset',
                         \__( 'Could not save the link because your database rejected some characters in the Name (usually emoji). Remove emoji/special characters and try again, or enable utf8mb4 on your database.', 'kitgenix-affiliate-link-manager' )
-                    );
+                    ) );
                 }
 
                 if ( defined( 'WP_DEBUG' ) && WP_DEBUG && $last_error !== '' ) {
-                    return new \WP_Error(
+                    return self::log_link_error( new \WP_Error(
                         'kitgenix_affiliate_db_insert_error',
                         \sprintf(
                             /* translators: %s: database error message */
                             \__( 'Could not insert post into the database. Database said: %s', 'kitgenix-affiliate-link-manager' ),
                             $last_error
                         )
-                    );
+                    ) );
                 }
             }
 
-            return $result;
+            return self::log_link_error( $result );
         }
 
         \update_post_meta( (int) $result, self::META_DESTINATION, $destination_url );
@@ -778,6 +787,10 @@ class Affiliate_Link_Post_Type {
             \add_post_meta( (int) $result, self::META_CLICKS, 0, true );
         }
 
+        if ( array_key_exists( 'clicks', $data ) && $data['clicks'] !== null && is_numeric( $data['clicks'] ) ) {
+            self::set_click_count( (int) $result, (int) $data['clicks'] );
+        }
+
         // Invalidate redirect cache entries for slug changes.
         self::purge_redirect_cache_for_slug( $old_slug );
         $saved = \get_post( (int) $result );
@@ -824,6 +837,87 @@ class Affiliate_Link_Post_Type {
         }
 
         return $reset;
+    }
+
+    /**
+     * Set the click count to an arbitrary non-negative value (e.g. when migrating
+     * clicks from another shortlink tool). Unlike reset_clicks(), this does not
+     * touch the per-link analytics breakdown.
+     */
+    public static function set_click_count( int $post_id, int $clicks ): bool {
+        $post = \get_post( $post_id );
+        if ( ! ( $post instanceof \WP_Post ) || $post->post_type !== self::POST_TYPE ) {
+            return false;
+        }
+
+        $clicks = max( 0, $clicks );
+        $current_clicks = self::get_click_count( $post_id );
+        if ( $clicks === $current_clicks ) {
+            return true;
+        }
+
+        $updated = false !== \update_post_meta( $post_id, self::META_CLICKS, $clicks );
+        if ( $updated && 'publish' === $post->post_status ) {
+            self::adjust_total_clicks( $clicks - $current_clicks );
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Bulk-assign one primary group to a set of links (replaces any existing group).
+     *
+     * @param int[] $post_ids
+     * @return int Number of links updated.
+     */
+    public static function bulk_set_group( array $post_ids, string $group_name ): int {
+        $group_names = self::normalize_term_names( $group_name, true );
+        if ( empty( $group_names ) ) {
+            return 0;
+        }
+
+        $updated = 0;
+        foreach ( $post_ids as $post_id ) {
+            $post_id = (int) $post_id;
+            if ( ! ( self::get_link_post( $post_id ) instanceof \WP_Post ) ) {
+                continue;
+            }
+
+            $result = \wp_set_object_terms( $post_id, $group_names, self::TAXONOMY_GROUP, false );
+            if ( ! \is_wp_error( $result ) ) {
+                $updated++;
+            }
+        }
+
+        return $updated;
+    }
+
+    /**
+     * Bulk-append tags to a set of links (keeps any existing tags).
+     *
+     * @param int[] $post_ids
+     * @return int Number of links updated.
+     */
+    public static function bulk_add_tags( array $post_ids, $tag_names ): int {
+        $tag_names = self::normalize_term_names( $tag_names, false );
+        if ( empty( $tag_names ) ) {
+            return 0;
+        }
+
+        $updated = 0;
+        foreach ( $post_ids as $post_id ) {
+            $post_id = (int) $post_id;
+            if ( ! ( self::get_link_post( $post_id ) instanceof \WP_Post ) ) {
+                continue;
+            }
+
+            $result = \wp_set_object_terms( $post_id, $tag_names, self::TAXONOMY_TAG, true );
+            if ( ! \is_wp_error( $result ) ) {
+                $updated++;
+            }
+        }
+
+        return $updated;
     }
 
     /**
@@ -1124,10 +1218,21 @@ class Affiliate_Link_Post_Type {
             }
         }
 
+        // Search/sort happen in PHP below across computed fields (health status, analytics,
+        // rotation pool) that are not directly queryable meta, so this intentionally loads
+        // every published link rather than paginating in SQL. A filterable hard cap keeps a
+        // very large library from exhausting memory on a single REST/CLI/export call; the
+        // admin Links tab itself uses a separate, properly paginated WP_Query (see
+        // Settings_UI::render_links_tab()) and is not affected by this limit.
+        $max_records = (int) \apply_filters( 'kitgenix_affiliate_list_records_limit', 5000 );
+        if ( $max_records <= 0 ) {
+            $max_records = 5000;
+        }
+
         $query_args = [
             'post_type'               => self::POST_TYPE,
             'post_status'             => 'publish',
-            'numberposts'             => -1,
+            'numberposts'             => $max_records,
             'orderby'                 => 'date',
             'order'                   => 'DESC',
             'no_found_rows'           => true,
@@ -1272,6 +1377,17 @@ class Affiliate_Link_Post_Type {
         ];
     }
 
+    /**
+     * Upper bound on rows processed per import call (REST, WP-CLI, and the admin UI all funnel
+     * through this method). Each row does its own DB writes with no batching/resumability, so an
+     * unbounded upload could exhaust max_execution_time mid-loop with no partial-progress report.
+     * Filterable for sites that genuinely need larger single-request imports.
+     */
+    private static function get_max_import_items(): int {
+        $max = (int) \apply_filters( 'kitgenix_affiliate_max_import_items', 2000 );
+        return $max > 0 ? $max : 2000;
+    }
+
     public static function import_links( array $items, string $match_existing = 'slug' ): array {
         $match_existing = \in_array( $match_existing, [ 'slug', 'id', 'none' ], true ) ? $match_existing : 'slug';
 
@@ -1280,6 +1396,13 @@ class Affiliate_Link_Post_Type {
         $failed        = 0;
         $results       = [];
         $refresh_clicks = false;
+
+        $max_items = self::get_max_import_items();
+        $skipped   = 0;
+        if ( count( $items ) > $max_items ) {
+            $skipped = count( $items ) - $max_items;
+            $items   = \array_slice( $items, 0, $max_items, true );
+        }
 
         foreach ( $items as $index => $item ) {
             if ( ! is_array( $item ) ) {
@@ -1327,7 +1450,8 @@ class Affiliate_Link_Post_Type {
 
             $saved_id = (int) $result;
             if ( $normalized['clicks'] !== null ) {
-                \update_post_meta( $saved_id, self::META_CLICKS, (int) $normalized['clicks'] );
+                // upsert_link() already applied the explicit click count via set_click_count();
+                // this flag just triggers a defensive full recompute once the batch finishes.
                 $refresh_clicks = true;
             }
 
@@ -1354,6 +1478,7 @@ class Affiliate_Link_Post_Type {
             'created' => $created,
             'updated' => $updated,
             'failed'  => $failed,
+            'skipped' => $skipped,
             'results' => $results,
         ];
     }

@@ -51,6 +51,27 @@ class Settings {
         return $per_page;
     }
 
+    public static function get_health_check_frequency(): string {
+        $settings  = self::get_settings();
+        $frequency = isset( $settings['health_check_frequency'] ) ? \sanitize_key( (string) $settings['health_check_frequency'] ) : 'hourly';
+
+        return \in_array( $frequency, [ 'thirty_minutes', 'hourly', 'twicedaily', 'daily' ], true ) ? $frequency : 'hourly';
+    }
+
+    public static function get_health_check_timeout(): int {
+        $settings = self::get_settings();
+        $timeout  = isset( $settings['health_check_timeout'] ) ? (int) $settings['health_check_timeout'] : 8;
+
+        if ( $timeout < 3 ) {
+            $timeout = 3;
+        }
+        if ( $timeout > 30 ) {
+            $timeout = 30;
+        }
+
+        return $timeout;
+    }
+
     public static function build_short_url( string $slug ): string {
         $slug   = \sanitize_title( $slug );
         $prefix = self::get_prefix();

@@ -82,6 +82,9 @@ class CLI_Command extends \WP_CLI_Command {
         if ( array_key_exists( 'enabled', $assoc_args ) ) {
             $data['enabled'] = (string) $assoc_args['enabled'];
         }
+        if ( array_key_exists( 'clicks', $assoc_args ) ) {
+            $data['clicks'] = (string) $assoc_args['clicks'];
+        }
 
         return $data;
     }
@@ -172,6 +175,9 @@ class CLI_Command extends \WP_CLI_Command {
      * [--enabled=<enabled>]
      * : 1 to enable, 0 to disable.
      *
+     * [--clicks=<clicks>]
+     * : Starting click count (useful when migrating from another shortlink tool).
+     *
      * [--porcelain]
      * : Output only the new link ID.
      */
@@ -249,6 +255,9 @@ class CLI_Command extends \WP_CLI_Command {
      *
      * [--enabled=<enabled>]
      * : 1 to enable, 0 to disable.
+     *
+     * [--clicks=<clicks>]
+     * : Set the click count to an exact value.
      */
     public function update( array $args, array $assoc_args ): void {
         $identifier = (string) $args[0];
@@ -308,6 +317,111 @@ class CLI_Command extends \WP_CLI_Command {
         $post = $this->get_link_or_error( (string) $args[0], (string) Utils\get_flag_value( $assoc_args, 'by', 'auto' ) );
         Affiliate_Link_Post_Type::set_enabled( (int) $post->ID, true );
         WP_CLI::success( __( 'Affiliate link enabled.', 'kitgenix-affiliate-link-manager' ) );
+    }
+
+    /**
+     * Duplicate an affiliate link, including campaign, schedule, and rotation settings.
+     *
+     * ## OPTIONS
+     *
+     * <identifier>
+     * : The link ID or slug to duplicate.
+     *
+     * [--by=<by>]
+     * : Lookup strategy: auto, id, or slug.
+     * ---
+     * default: auto
+     * ---
+     *
+     * [--porcelain]
+     * : Output only the new link ID.
+     */
+    public function duplicate( array $args, array $assoc_args ): void {
+        $post   = $this->get_link_or_error( (string) $args[0], (string) Utils\get_flag_value( $assoc_args, 'by', 'auto' ) );
+        $result = Affiliate_Link_Post_Type::duplicate_link( (int) $post->ID );
+        if ( $result instanceof \WP_Error ) {
+            WP_CLI::error( $result->get_error_message() );
+        }
+
+        if ( Utils\get_flag_value( $assoc_args, 'porcelain', false ) ) {
+            WP_CLI::line( (string) $result );
+            return;
+        }
+
+        WP_CLI::success(
+            sprintf(
+                /* translators: %d: new link ID */
+                __( 'Duplicated affiliate link as #%d.', 'kitgenix-affiliate-link-manager' ),
+                (int) $result
+            )
+        );
+    }
+
+    /**
+     * Reset an affiliate link's click count to 0.
+     *
+     * ## OPTIONS
+     *
+     * <identifier>
+     * : The link ID or slug.
+     *
+     * [--by=<by>]
+     * : Lookup strategy: auto, id, or slug.
+     * ---
+     * default: auto
+     * ---
+     */
+    public function reset_clicks( array $args, array $assoc_args ): void {
+        $post = $this->get_link_or_error( (string) $args[0], (string) Utils\get_flag_value( $assoc_args, 'by', 'auto' ) );
+        Affiliate_Link_Post_Type::reset_clicks( (int) $post->ID );
+        WP_CLI::success( __( 'Click count reset.', 'kitgenix-affiliate-link-manager' ) );
+    }
+
+    /**
+     * Run a destination health check for one link (or all links) right now.
+     *
+     * ## OPTIONS
+     *
+     * [<identifier>]
+     * : The link ID or slug. Omit when using --all.
+     *
+     * [--by=<by>]
+     * : Lookup strategy: auto, id, or slug.
+     * ---
+     * default: auto
+     * ---
+     *
+     * [--all]
+     * : Check every published link instead of a single link.
+     */
+    public function check_health( array $args, array $assoc_args ): void {
+        if ( Utils\get_flag_value( $assoc_args, 'all', false ) ) {
+            $checked = Health_Checks::run_check_for_all();
+            WP_CLI::success(
+                sprintf(
+                    /* translators: %d: number of links checked */
+                    __( 'Checked %d links.', 'kitgenix-affiliate-link-manager' ),
+                    $checked
+                )
+            );
+            return;
+        }
+
+        if ( empty( $args[0] ) ) {
+            WP_CLI::error( __( 'Please provide a link identifier, or pass --all to check every link.', 'kitgenix-affiliate-link-manager' ) );
+        }
+
+        $post   = $this->get_link_or_error( (string) $args[0], (string) Utils\get_flag_value( $assoc_args, 'by', 'auto' ) );
+        $report = Health_Checks::run_single_check( (int) $post->ID );
+
+        WP_CLI::success(
+            sprintf(
+                /* translators: 1: health status, 2: health message */
+                __( 'Health status: %1$s. %2$s', 'kitgenix-affiliate-link-manager' ),
+                (string) ( $report['status'] ?? 'unknown' ),
+                (string) ( $report['message'] ?? '' )
+            )
+        );
     }
 
     /**
@@ -374,18 +488,28 @@ class CLI_Command extends \WP_CLI_Command {
         }
 
         $reader->setFlags( \SplFileObject::READ_CSV );
+        $reader->setCsvControl( ',', '"', '\\' );
         $headers = $reader->fgetcsv();
         if ( ! is_array( $headers ) || $headers === [ null ] ) {
             return [];
         }
 
+        // Deliberately NOT a foreach() here: SplFileObject's Iterator::rewind() resets the
+        // file pointer to the very first line, which would re-read the header row above as
+        // a data row on the first iteration. Reading the rest of the file via fgetcsv() in a
+        // while loop keeps the pointer where it already is, immediately after the header.
         $rows = [];
-        foreach ( $reader as $row ) {
+        while ( ! $reader->eof() ) {
+            $row = $reader->fgetcsv();
             if ( ! is_array( $row ) || $row === [ null ] ) {
                 continue;
             }
 
-            $rows[] = array_combine( $headers, array_pad( $row, count( $headers ), '' ) );
+            // A row with more (or fewer) fields than the header row is possible with a
+            // hand-edited or malformed CSV; array_combine() requires equal counts, so pad
+            // and truncate to the header width rather than letting a mismatch throw.
+            $normalized_row = array_slice( array_pad( $row, count( $headers ), '' ), 0, count( $headers ) );
+            $rows[]         = array_combine( $headers, $normalized_row );
         }
 
         return $rows;
@@ -406,10 +530,24 @@ class CLI_Command extends \WP_CLI_Command {
         return $content;
     }
 
+    /**
+     * Neutralize CSV/spreadsheet formula injection: a cell that opens with =, +, -, @,
+     * or a tab/CR is treated as a formula by Excel/Sheets when the file is opened. Prefixing
+     * with a literal apostrophe keeps the visible value intact while forcing text interpretation.
+     */
+    private function neutralize_csv_formula( string $value ): string {
+        if ( $value !== '' && false !== strpbrk( $value[0], "=+-@\t\r" ) ) {
+            return "'" . $value;
+        }
+
+        return $value;
+    }
+
     private function build_csv_row( array $fields ): string {
         $escaped_fields = [];
         foreach ( $fields as $field ) {
-            $value = str_replace( '"', '""', (string) $field );
+            $value = $this->neutralize_csv_formula( (string) $field );
+            $value = str_replace( '"', '""', $value );
             if ( false !== strpbrk( $value, ",\r\n\"" ) ) {
                 $value = '"' . $value . '"';
             }
@@ -532,6 +670,16 @@ class CLI_Command extends \WP_CLI_Command {
             $rows,
             (string) Utils\get_flag_value( $assoc_args, 'match-existing', 'slug' )
         );
+
+        if ( isset( $result['skipped'] ) && (int) $result['skipped'] > 0 ) {
+            WP_CLI::warning(
+                sprintf(
+                    /* translators: %d: number of rows skipped because the file exceeded the per-import row limit */
+                    __( '%d row(s) were not processed because the file exceeded the per-import limit; split the file and import the rest separately.', 'kitgenix-affiliate-link-manager' ),
+                    (int) $result['skipped']
+                )
+            );
+        }
 
         if ( (int) $result['failed'] > 0 ) {
             WP_CLI::warning(

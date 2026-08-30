@@ -16,20 +16,58 @@ final class Health_Checks {
     public const META_HTTP_CODE    = '_kitgenix_affiliate_health_http_code';
     public const META_FINAL_URL    = '_kitgenix_affiliate_health_final_url';
     public const META_REDIRECT_HOPS = '_kitgenix_affiliate_health_redirect_hops';
+    public const META_CODE         = '_kitgenix_affiliate_health_code';
 
     private const BATCH_SIZE        = 10;
     private const MAX_REDIRECT_HOPS = 5;
 
+    private const CRON_SCHEDULE_MAP = [
+        'thirty_minutes' => 'kitgenix_affiliate_thirty_minutes',
+        'hourly'         => 'hourly',
+        'twicedaily'     => 'twicedaily',
+        'daily'          => 'daily',
+    ];
+
     public static function init(): void {
+        \add_filter( 'cron_schedules', [ __CLASS__, 'register_cron_schedules' ] ); // phpcs:ignore WordPress.WP.CronInterval.ChangeDetected -- interval is user-configurable via plugin settings.
         \add_action( 'init', [ __CLASS__, 'maybe_schedule_health_checks' ] );
         \add_action( self::CRON_HOOK, [ __CLASS__, 'run_scheduled_checks' ] );
         \add_action( self::SINGLE_CRON_HOOK, [ __CLASS__, 'run_scheduled_checks' ] );
     }
 
+    /**
+     * @param array<string,array<string,mixed>> $schedules
+     * @return array<string,array<string,mixed>>
+     */
+    public static function register_cron_schedules( array $schedules ): array {
+        if ( ! isset( $schedules['kitgenix_affiliate_thirty_minutes'] ) ) {
+            $schedules['kitgenix_affiliate_thirty_minutes'] = [
+                'interval' => 30 * MINUTE_IN_SECONDS,
+                'display'  => \__( 'Every 30 minutes (Kitgenix Affiliate Link Manager)', 'kitgenix-affiliate-link-manager' ),
+            ];
+        }
+
+        return $schedules;
+    }
+
+    private static function get_cron_schedule_slug(): string {
+        $frequency = Settings::get_health_check_frequency();
+        return self::CRON_SCHEDULE_MAP[ $frequency ] ?? 'hourly';
+    }
+
     public static function maybe_schedule_health_checks(): void {
-        if ( ! \wp_next_scheduled( self::CRON_HOOK ) ) {
+        $desired_schedule = self::get_cron_schedule_slug();
+        $scheduled_event   = \wp_get_scheduled_event( self::CRON_HOOK );
+
+        if ( $scheduled_event && isset( $scheduled_event->schedule ) && $scheduled_event->schedule !== $desired_schedule ) {
+            // The configured frequency changed since this was last scheduled; re-schedule at the new interval.
+            \wp_clear_scheduled_hook( self::CRON_HOOK );
+            $scheduled_event = false;
+        }
+
+        if ( ! $scheduled_event ) {
             $first_run = (int) \current_time( 'timestamp', true ) + 5 * MINUTE_IN_SECONDS;
-            \wp_schedule_event( $first_run, 'hourly', self::CRON_HOOK );
+            \wp_schedule_event( $first_run, $desired_schedule, self::CRON_HOOK );
         }
 
         $summary = self::get_summary();
@@ -83,6 +121,10 @@ final class Health_Checks {
         return max( 0, (int) \get_post_meta( $post_id, self::META_REDIRECT_HOPS, true ) );
     }
 
+    public static function get_health_code( int $post_id ): string {
+        return \sanitize_key( (string) \get_post_meta( $post_id, self::META_CODE, true ) );
+    }
+
     public static function run_scheduled_checks(): void {
         $offset = max( 0, (int) \get_option( self::OPTION_CURSOR, 0 ) );
         $ids    = \get_posts(
@@ -121,6 +163,60 @@ final class Health_Checks {
         }
 
         self::rebuild_summary();
+    }
+
+    /**
+     * Run a health check for a single link right now, outside the hourly cron batch,
+     * and refresh the site-wide summary. Used by the admin "Check now" row action.
+     *
+     * @return array<string,mixed>
+     */
+    public static function run_single_check( int $post_id ): array {
+        $report = self::check_link_destinations( $post_id );
+        self::store_health_report( $post_id, $report );
+        self::rebuild_summary();
+
+        return $report;
+    }
+
+    /**
+     * Run a health check for every published link right now, bypassing the cursor-based
+     * batching used by the hourly cron. Used by the admin "Run health check now" action.
+     */
+    public static function run_check_for_all(): int {
+        $ids = \get_posts(
+            [
+                'post_type'              => Affiliate_Link_Post_Type::POST_TYPE,
+                'post_status'            => 'publish',
+                'fields'                 => 'ids',
+                'numberposts'            => -1,
+                'orderby'                => 'ID',
+                'order'                  => 'ASC',
+                'no_found_rows'          => true,
+                'update_post_meta_cache' => false,
+                'update_post_term_cache' => false,
+                'suppress_filters'       => false,
+            ]
+        );
+
+        if ( ! \is_array( $ids ) ) {
+            $ids = [];
+        }
+
+        $checked = 0;
+        foreach ( $ids as $post_id ) {
+            $post_id = (int) $post_id;
+            if ( $post_id <= 0 ) {
+                continue;
+            }
+
+            self::store_health_report( $post_id, self::check_link_destinations( $post_id ) );
+            $checked++;
+        }
+
+        self::rebuild_summary();
+
+        return $checked;
     }
 
     private static function rebuild_summary(): void {
@@ -203,6 +299,7 @@ final class Health_Checks {
                 'http_code'     => 0,
                 'final_url'     => '',
                 'redirect_hops' => 0,
+                'code'          => 'health_check_no_destinations',
             ];
         }
 
@@ -213,6 +310,7 @@ final class Health_Checks {
         $top_final_url  = '';
         $first_issue    = '';
         $first_status   = 'healthy';
+        $first_code     = '';
 
         foreach ( $destinations as $destination_url ) {
             $result = self::inspect_destination( $destination_url );
@@ -236,6 +334,7 @@ final class Health_Checks {
                 $first_status = (string) $result['status'];
                 $top_http_code = (int) $result['http_code'];
                 $top_final_url = (string) $result['final_url'];
+                $first_code    = (string) ( $result['code'] ?? '' );
             }
         }
 
@@ -286,6 +385,7 @@ final class Health_Checks {
             'http_code'     => $top_http_code,
             'final_url'     => $top_final_url,
             'redirect_hops' => $max_hops,
+            'code'          => $first_code !== '' ? $first_code : 'health_link_ok',
         ];
     }
 
@@ -338,6 +438,7 @@ final class Health_Checks {
                     'http_code'     => 0,
                     'final_url'     => $current_url,
                     'redirect_hops' => $redirect_hops,
+                    'code'          => self::classify_transport_error( $response ),
                 ];
             }
 
@@ -355,6 +456,7 @@ final class Health_Checks {
                         'http_code'     => $http_code,
                         'final_url'     => $current_url,
                         'redirect_hops' => $redirect_hops,
+                        'code'          => 'health_redirect_error',
                     ];
                 }
 
@@ -366,6 +468,7 @@ final class Health_Checks {
                         'http_code'     => $http_code,
                         'final_url'     => $location,
                         'redirect_hops' => $redirect_hops,
+                        'code'          => 'health_redirect_error',
                     ];
                 }
 
@@ -385,6 +488,7 @@ final class Health_Checks {
                 'http_code'     => 0,
                 'final_url'     => $final_url,
                 'redirect_hops' => $redirect_hops,
+                'code'          => 'health_check_unknown',
             ];
         }
 
@@ -399,6 +503,7 @@ final class Health_Checks {
                 'http_code'     => $http_code,
                 'final_url'     => $final_url,
                 'redirect_hops' => $redirect_hops,
+                'code'          => 'health_link_dead',
             ];
         }
 
@@ -413,6 +518,7 @@ final class Health_Checks {
                 'http_code'     => $http_code,
                 'final_url'     => $final_url,
                 'redirect_hops' => $redirect_hops,
+                'code'          => 'health_link_redirect',
             ];
         }
 
@@ -422,6 +528,7 @@ final class Health_Checks {
             'http_code'     => $http_code,
             'final_url'     => $final_url,
             'redirect_hops' => 0,
+            'code'          => 'health_link_ok',
         ];
     }
 
@@ -430,11 +537,11 @@ final class Health_Checks {
      */
     private static function perform_request( string $url ) {
         $args = [
-            'timeout'            => (int) \apply_filters( 'kitgenix_affiliate_health_check_timeout', 8, $url ),
+            'timeout'            => (int) \apply_filters( 'kitgenix_affiliate_health_check_timeout', Settings::get_health_check_timeout(), $url ),
             'redirection'        => 0,
             'limit_response_size'=> 1024,
             'reject_unsafe_urls' => true,
-            'user-agent'         => 'Kitgenix Affiliate Link Manager/' . ( defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '1.1.1' ) . '; ' . \home_url( '/' ),
+            'user-agent'         => 'Kitgenix Affiliate Link Manager/' . ( defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ? (string) KITGENIX_AFFILIATE_LINK_MANAGER_VERSION : '2.0.0' ) . '; ' . \home_url( '/' ),
         ];
 
         $response = \wp_remote_head( $url, $args );
@@ -445,6 +552,34 @@ final class Health_Checks {
         }
 
         return $response;
+    }
+
+    /**
+     * Classify a transport-level WP_Error into a structured health code so genuinely dead
+     * links can be told apart from transient network blips and site-level request blocks.
+     */
+    private static function classify_transport_error( \WP_Error $error ): string {
+        $message = strtolower( $error->get_error_message() );
+
+        // WP_Http itself returns this exact message when reject_unsafe_urls rejects the
+        // target (e.g. it resolves to a private/loopback address) – not a dead destination.
+        if ( false !== strpos( $message, 'a valid url was not provided' ) || false !== strpos( $message, 'not accessible' ) ) {
+            return 'health_check_blocked';
+        }
+
+        if ( false !== strpos( $message, 'refused' ) ) {
+            return 'health_link_dead';
+        }
+
+        if ( false !== strpos( $message, 'could not resolve host' )
+            || false !== strpos( $message, 'timed out' )
+            || false !== strpos( $message, 'timeout' )
+            || false !== strpos( $message, 'resolve' )
+        ) {
+            return 'health_network_error';
+        }
+
+        return 'health_network_error';
     }
 
     private static function resolve_redirect_location( string $base_url, string $location ): string {
@@ -495,11 +630,33 @@ final class Health_Checks {
     }
 
     private static function store_health_report( int $post_id, array $report ): void {
-        \update_post_meta( $post_id, self::META_STATUS, isset( $report['status'] ) ? (string) $report['status'] : 'unknown' );
+        $status = isset( $report['status'] ) ? (string) $report['status'] : 'unknown';
+        $code   = isset( $report['code'] ) ? \sanitize_key( (string) $report['code'] ) : '';
+
+        \update_post_meta( $post_id, self::META_STATUS, $status );
         \update_post_meta( $post_id, self::META_MESSAGE, isset( $report['message'] ) ? (string) $report['message'] : '' );
         \update_post_meta( $post_id, self::META_CHECKED_AT, isset( $report['checked_at'] ) ? (int) $report['checked_at'] : 0 );
         \update_post_meta( $post_id, self::META_HTTP_CODE, isset( $report['http_code'] ) ? (int) $report['http_code'] : 0 );
         \update_post_meta( $post_id, self::META_FINAL_URL, isset( $report['final_url'] ) ? (string) $report['final_url'] : '' );
         \update_post_meta( $post_id, self::META_REDIRECT_HOPS, isset( $report['redirect_hops'] ) ? (int) $report['redirect_hops'] : 0 );
+        \update_post_meta( $post_id, self::META_CODE, $code );
+
+        // Only warning/critical/unknown results are logged – an hourly cron checking every
+        // link would otherwise flood the capped 100-entry log with routine "healthy" noise.
+        if ( 'healthy' === $status ) {
+            return;
+        }
+
+        Event_Log::record(
+            'health-check',
+            'critical' === $status ? 'error' : $status,
+            sprintf(
+                /* translators: 1: link title, 2: health check message. */
+                \__( '%1$s: %2$s', 'kitgenix-affiliate-link-manager' ),
+                (string) \get_the_title( $post_id ),
+                isset( $report['message'] ) ? (string) $report['message'] : ''
+            ),
+            $code
+        );
     }
 }

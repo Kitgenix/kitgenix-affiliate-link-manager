@@ -14,6 +14,14 @@ final class Analytics {
     private const BREAKDOWN_LIMIT = 5;
 
     /**
+     * Overview snapshot transient. Six aggregate queries run against the click_stats
+     * table to build this; caching briefly keeps the admin Links tab and REST/CLI
+     * summaries from re-running them on every single page load.
+     */
+    private const OVERVIEW_CACHE_KEY = 'kitgenix_affiliate_link_manager_overview_snapshot';
+    private const OVERVIEW_CACHE_TTL = 300;
+
+    /**
      * @var array<int,array<string,mixed>>
      */
     private static $link_snapshots = [];
@@ -128,6 +136,7 @@ final class Analytics {
         if ( $result !== false ) {
             unset( self::$link_snapshots[ $post_id ] );
             self::$overview_snapshots = [];
+            \delete_transient( self::OVERVIEW_CACHE_KEY );
         }
     }
 
@@ -157,6 +166,7 @@ final class Analytics {
 
         unset( self::$link_snapshots[ $post_id ] );
         self::$overview_snapshots = [];
+        \delete_transient( self::OVERVIEW_CACHE_KEY );
     }
 
     public static function prime_link_snapshots( array $post_ids ): void {
@@ -206,6 +216,15 @@ final class Analytics {
             return self::$overview_snapshots[ $cache_key ];
         }
 
+        // Six aggregate queries build this snapshot; a short transient keeps repeated
+        // admin page loads (e.g. reopening the Links tab) from re-running all of them
+        // every time. record_click()/reset_link_analytics() clear it immediately on write.
+        $cached = \get_transient( self::OVERVIEW_CACHE_KEY );
+        if ( is_array( $cached ) ) {
+            self::$overview_snapshots[ $cache_key ] = $cached;
+            return $cached;
+        }
+
         self::maybe_install_table();
 
         $snapshot = self::get_empty_snapshot();
@@ -216,6 +235,7 @@ final class Analytics {
         $snapshot['top_placements_30_days']  = self::query_breakdown_for_period( self::BREAKDOWN_DAYS, 'placement' );
         $snapshot['top_referrers_30_days']   = self::query_breakdown_for_period( self::BREAKDOWN_DAYS, 'referrer' );
 
+        \set_transient( self::OVERVIEW_CACHE_KEY, $snapshot, self::OVERVIEW_CACHE_TTL );
         self::$overview_snapshots[ $cache_key ] = $snapshot;
 
         return $snapshot;

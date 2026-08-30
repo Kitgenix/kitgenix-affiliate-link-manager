@@ -90,6 +90,36 @@ final class Rest_API {
                 'permission_callback' => [ __CLASS__, 'permission_callback' ],
             ]
         );
+
+        \register_rest_route(
+            self::NAMESPACE,
+            '/links/(?P<id>\d+)/duplicate',
+            [
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => [ __CLASS__, 'duplicate_link' ],
+                'permission_callback' => [ __CLASS__, 'permission_callback' ],
+            ]
+        );
+
+        \register_rest_route(
+            self::NAMESPACE,
+            '/links/(?P<id>\d+)/reset-clicks',
+            [
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => [ __CLASS__, 'reset_link_clicks' ],
+                'permission_callback' => [ __CLASS__, 'permission_callback' ],
+            ]
+        );
+
+        \register_rest_route(
+            self::NAMESPACE,
+            '/links/(?P<id>\d+)/check-health',
+            [
+                'methods'             => \WP_REST_Server::CREATABLE,
+                'callback'            => [ __CLASS__, 'check_link_health' ],
+                'permission_callback' => [ __CLASS__, 'permission_callback' ],
+            ]
+        );
     }
 
     private static function get_manage_capability(): string {
@@ -251,6 +281,9 @@ final class Rest_API {
         if ( $request->has_param( 'enabled' ) ) {
             $data['enabled'] = $request->get_param( 'enabled' );
         }
+        if ( $request->has_param( 'clicks' ) ) {
+            $data['clicks'] = $request->get_param( 'clicks' );
+        }
 
         return $data;
     }
@@ -325,6 +358,42 @@ final class Rest_API {
         }
 
         Affiliate_Link_Post_Type::set_enabled( (int) $link->ID, true );
+
+        return new \WP_REST_Response( Affiliate_Link_Post_Type::get_link_record( (int) $link->ID ), 200 );
+    }
+
+    public static function duplicate_link( \WP_REST_Request $request ) {
+        $link = self::get_link_from_request( $request );
+        if ( $link instanceof \WP_Error ) {
+            return $link;
+        }
+
+        $result = Affiliate_Link_Post_Type::duplicate_link( (int) $link->ID );
+        if ( $result instanceof \WP_Error ) {
+            return new \WP_Error( $result->get_error_code(), $result->get_error_message(), [ 'status' => 400 ] );
+        }
+
+        return new \WP_REST_Response( Affiliate_Link_Post_Type::get_link_record( (int) $result ), 201 );
+    }
+
+    public static function reset_link_clicks( \WP_REST_Request $request ) {
+        $link = self::get_link_from_request( $request );
+        if ( $link instanceof \WP_Error ) {
+            return $link;
+        }
+
+        Affiliate_Link_Post_Type::reset_clicks( (int) $link->ID );
+
+        return new \WP_REST_Response( Affiliate_Link_Post_Type::get_link_record( (int) $link->ID ), 200 );
+    }
+
+    public static function check_link_health( \WP_REST_Request $request ) {
+        $link = self::get_link_from_request( $request );
+        if ( $link instanceof \WP_Error ) {
+            return $link;
+        }
+
+        Health_Checks::run_single_check( (int) $link->ID );
 
         return new \WP_REST_Response( Affiliate_Link_Post_Type::get_link_record( (int) $link->ID ), 200 );
     }

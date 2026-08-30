@@ -141,6 +141,14 @@
     );
   }
 
+  /**
+   * The Edit-link modal needs its form fields populated from the clicked
+   * row's data-* attributes before it opens, so it can't use the shared
+   * library's generic data-kitgenix-modal-target trigger directly. Opening
+   * and closing itself is still delegated to window.KitgenixAdminUI so the
+   * modal behaves identically to every other Kitgenix modal (Escape key,
+   * backdrop click, focus return) once the fields are filled in.
+   */
   function bindModalEditor() {
     var modal = document.getElementById('kitgenix-affiliate-edit-modal');
     if (!modal) return;
@@ -148,33 +156,8 @@
     var form = document.getElementById('kitgenix-affiliate-edit-form');
     var deleteBtn = document.getElementById('kitgenix-affiliate-modal-delete');
 
-    var lastFocusEl = null;
-    var lastTriggerEl = null;
-
-    function getFocusableElements() {
-      var dialog = modal.querySelector('.kitgenix-modal__dialog');
-      if (!dialog) return [];
-
-      var nodes = dialog.querySelectorAll(
-        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-
-      // Filter out invisible elements.
-      var out = [];
-      for (var i = 0; i < nodes.length; i++) {
-        var el = nodes[i];
-        if (!el) continue;
-        if (el.offsetParent === null && el !== document.activeElement) continue;
-        out.push(el);
-      }
-      return out;
-    }
-
-    function openModal(data, triggerEl) {
+    function fillModal(data) {
       if (!form) return;
-
-      lastFocusEl = document.activeElement;
-      lastTriggerEl = triggerEl || null;
 
       form.querySelector('input[name="post_id"]').value = data.id || '';
       form.querySelector('input[name="title"]').value = data.title || '';
@@ -182,138 +165,82 @@
       form.querySelector('input[name="destination_url"]').value = data.destination || '';
 
       var startsAtEl = form.querySelector('input[name="starts_at"]');
-      if (startsAtEl) {
-        startsAtEl.value = data.startsAt || '';
-      }
+      if (startsAtEl) startsAtEl.value = data.startsAt || '';
 
       var expiresAtEl = form.querySelector('input[name="expires_at"]');
-      if (expiresAtEl) {
-        expiresAtEl.value = data.expiresAt || '';
-      }
+      if (expiresAtEl) expiresAtEl.value = data.expiresAt || '';
 
       var fallbackEl = form.querySelector('input[name="fallback_url"]');
-      if (fallbackEl) {
-        fallbackEl.value = data.fallbackUrl || '';
-      }
+      if (fallbackEl) fallbackEl.value = data.fallbackUrl || '';
 
       var rotationModeEl = form.querySelector('select[name="rotation_mode"]');
-      if (rotationModeEl) {
-        rotationModeEl.value = data.rotationMode || 'none';
-      }
+      if (rotationModeEl) rotationModeEl.value = data.rotationMode || 'none';
 
       var rotationDestinationsEl = form.querySelector('textarea[name="rotation_destinations"]');
-      if (rotationDestinationsEl) {
-        rotationDestinationsEl.value = data.rotationDestinations || '';
-      }
+      if (rotationDestinationsEl) rotationDestinationsEl.value = data.rotationDestinations || '';
 
       var groupEl = form.querySelector('input[name="group_name"]');
-      if (groupEl) {
-        groupEl.value = data.groupName || '';
-      }
+      if (groupEl) groupEl.value = data.groupName || '';
 
       var tagsEl = form.querySelector('input[name="tag_names"]');
-      if (tagsEl) {
-        tagsEl.value = data.tags || '';
-      }
+      if (tagsEl) tagsEl.value = data.tags || '';
 
       var noteEl = form.querySelector('textarea[name="campaign_note"]');
-      if (noteEl) {
-        noteEl.value = data.campaignNote || '';
-      }
+      if (noteEl) noteEl.value = data.campaignNote || '';
 
       var relEl = form.querySelector('select[name="rel"]');
-      if (relEl) {
-        relEl.value = data.rel || 'nofollow sponsored';
-      }
+      if (relEl) relEl.value = data.rel || 'nofollow sponsored';
 
       var enabledEl = form.querySelector('input[name="enabled"]');
-      if (enabledEl) {
-        enabledEl.checked = (data.enabled !== '0');
-      }
+      if (enabledEl) enabledEl.checked = (data.enabled !== '0');
+
+      var clicksEl = form.querySelector('input[name="clicks"]');
+      if (clicksEl) clicksEl.value = data.clicks || '0';
 
       if (deleteBtn) {
         deleteBtn.setAttribute('href', data.deleteUrl || '#');
         deleteBtn.style.display = data.deleteUrl ? '' : 'none';
       }
-
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('is-open');
-
-      var first = document.getElementById('kitgenix_affiliate_modal_title');
-      if (first) first.focus();
-    }
-
-    function closeModal() {
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('is-open');
-
-      // Restore focus to the triggering element if possible.
-      var toFocus = lastTriggerEl || lastFocusEl;
-      if (toFocus && typeof toFocus.focus === 'function' && document.contains(toFocus)) {
-        toFocus.focus();
-      }
-      lastFocusEl = null;
-      lastTriggerEl = null;
     }
 
     document.addEventListener('click', function (e) {
       var t = e.target;
       if (t && t.nodeType === 3) t = t.parentElement;
-      if (!t) return;
-
-      var close = t.closest('[data-kitgenix-modal-close]');
-      if (close) {
-        e.preventDefault();
-        closeModal();
-        return;
-      }
+      if (!t || !t.closest) return;
 
       var edit = t.closest('[data-kitgenix-edit]');
-      if (edit) {
-        e.preventDefault();
-        openModal({
-          id: edit.getAttribute('data-link-id') || '',
-          title: edit.getAttribute('data-title') || '',
-          slug: edit.getAttribute('data-slug') || '',
-          destination: edit.getAttribute('data-destination') || '',
-          startsAt: edit.getAttribute('data-starts-at') || '',
-          expiresAt: edit.getAttribute('data-expires-at') || '',
-          fallbackUrl: edit.getAttribute('data-fallback-url') || '',
-          rotationMode: edit.getAttribute('data-rotation-mode') || 'none',
-          rotationDestinations: edit.getAttribute('data-rotation-destinations') || '',
-          groupName: edit.getAttribute('data-group-name') || '',
-          tags: edit.getAttribute('data-tags') || '',
-          campaignNote: edit.getAttribute('data-campaign-note') || '',
-          rel: edit.getAttribute('data-rel') || '',
-          enabled: edit.getAttribute('data-enabled') || '1',
-          deleteUrl: edit.getAttribute('data-delete-url') || ''
-        }, edit);
+      if (!edit) return;
+
+      e.preventDefault();
+
+      fillModal({
+        id: edit.getAttribute('data-link-id') || '',
+        title: edit.getAttribute('data-title') || '',
+        slug: edit.getAttribute('data-slug') || '',
+        destination: edit.getAttribute('data-destination') || '',
+        startsAt: edit.getAttribute('data-starts-at') || '',
+        expiresAt: edit.getAttribute('data-expires-at') || '',
+        fallbackUrl: edit.getAttribute('data-fallback-url') || '',
+        rotationMode: edit.getAttribute('data-rotation-mode') || 'none',
+        rotationDestinations: edit.getAttribute('data-rotation-destinations') || '',
+        groupName: edit.getAttribute('data-group-name') || '',
+        tags: edit.getAttribute('data-tags') || '',
+        campaignNote: edit.getAttribute('data-campaign-note') || '',
+        rel: edit.getAttribute('data-rel') || '',
+        enabled: edit.getAttribute('data-enabled') || '1',
+        clicks: edit.getAttribute('data-clicks') || '0',
+        deleteUrl: edit.getAttribute('data-delete-url') || ''
+      });
+
+      if (window.KitgenixAdminUI && typeof window.KitgenixAdminUI.openModal === 'function') {
+        window.KitgenixAdminUI.openModal('#kitgenix-affiliate-edit-modal');
       }
-    });
 
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && modal.classList.contains('is-open')) {
-        closeModal();
-      }
-
-      if (e.key === 'Tab' && modal.classList.contains('is-open')) {
-        var focusables = getFocusableElements();
-        if (!focusables.length) return;
-
-        var first = focusables[0];
-        var last = focusables[focusables.length - 1];
-
-        if (e.shiftKey) {
-          if (document.activeElement === first || !modal.contains(document.activeElement)) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
+      var first = document.getElementById('kitgenix_affiliate_modal_title');
+      if (first) {
+        window.setTimeout(function () {
+          first.focus();
+        }, 20);
       }
     });
 
@@ -355,11 +282,11 @@
     }
 
     if (!target || !target.closest) return;
-    var btn = target.closest('[data-kitgenix-copy]');
+    var btn = target.closest('[data-kitgenix-copy-text]');
     if (!btn) return;
     e.preventDefault();
 
-    var value = btn.getAttribute('data-kitgenix-copy') || '';
+    var value = btn.getAttribute('data-kitgenix-copy-text') || '';
     if (!value) return;
 
     if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
@@ -471,6 +398,29 @@
     update();
   }
 
+  function bindBulkValueToggle() {
+    var select = document.getElementById('kitgenix_bulk_action');
+    var input = document.getElementById('kitgenix_bulk_value');
+    if (!select || !input) return;
+
+    function sync() {
+      var option = select.options[select.selectedIndex];
+      var placeholder = option ? option.getAttribute('data-kitgenix-bulk-needs-value') : null;
+      if (placeholder) {
+        input.style.display = '';
+        input.placeholder = placeholder;
+        input.setAttribute('aria-hidden', 'false');
+      } else {
+        input.style.display = 'none';
+        input.value = '';
+        input.setAttribute('aria-hidden', 'true');
+      }
+    }
+
+    select.addEventListener('change', sync);
+    sync();
+  }
+
   function bindBulkSelectAll() {
     var selectAll = document.getElementById('kitgenix-select-all-links');
     var table = document.getElementById('kitgenix-affiliate-links-table');
@@ -484,10 +434,28 @@
     });
   }
 
+  // Dismiss button for .kitgenix-notice banners (server-rendered admin
+  // notices adopting the shared notice component).
+  function bindNoticeDismiss() {
+    document.addEventListener('click', function (e) {
+      var target = e.target;
+      if (target && target.nodeType === 3) target = target.parentElement;
+      if (!target || !target.closest) return;
+
+      var closeBtn = target.closest('.kitgenix-notice-close');
+      if (!closeBtn) return;
+
+      var notice = closeBtn.closest('.kitgenix-notice');
+      if (notice) notice.remove();
+    });
+  }
+
   document.addEventListener('click', onCopyClick);
   document.addEventListener('DOMContentLoaded', bindAutoSlug);
   document.addEventListener('DOMContentLoaded', bindModalEditor);
   document.addEventListener('DOMContentLoaded', bindLinksSearch);
   document.addEventListener('DOMContentLoaded', bindBulkSelectAll);
+  document.addEventListener('DOMContentLoaded', bindBulkValueToggle);
   document.addEventListener('DOMContentLoaded', bindInlineValidation);
+  bindNoticeDismiss();
 })();

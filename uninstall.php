@@ -75,16 +75,38 @@ if ( $kitgenix_affiliate_should_delete_data ) {
 	}
 }
 
-delete_option( 'kitgenix_affiliate_link_manager_settings' );
+// Plugin-only settings/log/transients are per-site data, so on multisite this must run once
+// per subsite (not just whichever site uninstall.php happens to execute in) or every other
+// subsite is left with orphaned rows in its own wp_options table.
+$kitgenix_affiliate_delete_site_data_for_current_site = static function (): void {
+	delete_option( 'kitgenix_affiliate_link_manager_settings' );
+	delete_option( 'kitgenix_affiliate_link_manager_total_clicks' );
+	delete_option( 'kitgenix_affiliate_link_manager_analytics_db_version' );
+	delete_option( 'kitgenix_affiliate_link_manager_health_summary' );
+	delete_option( 'kitgenix_affiliate_link_manager_health_cursor' );
+	delete_option( 'kitgenix_affiliate_link_manager_event_log' );
+
+	delete_transient( 'kitgenix_affiliate_link_manager_do_activation_redirect' );
+	delete_transient( 'kitgenix_affiliate_link_manager_do_rewrite_flush' );
+	delete_transient( 'kitgenix_affiliate_link_manager_overview_snapshot' );
+};
+
+if ( is_multisite() && function_exists( 'get_sites' ) && function_exists( 'switch_to_blog' ) ) {
+	$kitgenix_affiliate_all_sites = get_sites( [ 'fields' => 'ids' ] );
+	if ( is_array( $kitgenix_affiliate_all_sites ) ) {
+		foreach ( $kitgenix_affiliate_all_sites as $kitgenix_affiliate_blog_id ) {
+			switch_to_blog( (int) $kitgenix_affiliate_blog_id );
+			$kitgenix_affiliate_delete_site_data_for_current_site();
+			restore_current_blog();
+		}
+	}
+} else {
+	$kitgenix_affiliate_delete_site_data_for_current_site();
+}
+
+// Network-wide fallbacks: the plugin never writes these via update_site_option(), but clean
+// them up defensively in case a network admin ever set them directly (e.g. via WP-CLI).
 delete_site_option( 'kitgenix_affiliate_link_manager_settings' );
-delete_option( 'kitgenix_affiliate_link_manager_total_clicks' );
-delete_option( 'kitgenix_affiliate_link_manager_analytics_db_version' );
 delete_site_option( 'kitgenix_affiliate_link_manager_analytics_db_version' );
-delete_option( 'kitgenix_affiliate_link_manager_health_summary' );
-delete_option( 'kitgenix_affiliate_link_manager_health_cursor' );
 delete_site_option( 'kitgenix_affiliate_link_manager_health_summary' );
 delete_site_option( 'kitgenix_affiliate_link_manager_health_cursor' );
-delete_option( 'kitgenix_affiliate_link_manager_event_log' );
-
-delete_transient( 'kitgenix_affiliate_link_manager_do_activation_redirect' );
-delete_transient( 'kitgenix_affiliate_link_manager_do_rewrite_flush' );
