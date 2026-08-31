@@ -1669,7 +1669,7 @@ class Settings_UI {
                 . ( $row_health_note !== '' ? '<div class="kitgenix-muted">' . \esc_html( $row_health_note ) . '</div>' : '' )
                 . ( $row_note_short !== '' ? '<div class="kitgenix-affiliate-note">' . \esc_html( $row_note_short ) . '</div>' : '' )
                 . '</td>'
-                . '<td class="kitgenix-col-destination"><a href="' . \esc_url( $row_dest ) . '" target="_blank" rel="noopener noreferrer ' . \esc_attr( $rel_value ) . '">' . \esc_html( $row_dest ) . '</a></td>'
+                . '<td class="kitgenix-col-destination"><a href="' . \esc_url( $row_dest ) . '" title="' . \esc_attr( $row_dest ) . '" target="_blank" rel="noopener noreferrer ' . \esc_attr( $rel_value ) . '">' . \esc_html( $row_dest ) . '</a></td>'
                 . '<td class="kitgenix-col-short"><span class="kitgenix-code" id="' . \esc_attr( $short_id ) . '">' . \esc_html( $short ) . '</span> '
                 . '<a href="#" class="button button-small" data-default-label="' . \esc_attr__( 'Copy', 'kitgenix-affiliate-link-manager' ) . '" data-copied-label="' . \esc_attr__( 'Copied', 'kitgenix-affiliate-link-manager' ) . '" data-kitgenix-copy-text="' . \esc_attr( $short ) . '">' . \esc_html__( 'Copy', 'kitgenix-affiliate-link-manager' ) . '</a>'
                 . '</td>'

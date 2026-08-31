@@ -1518,15 +1518,93 @@ html #wpbody-content > .wrap.kitgenix-admin-app,
   color: var(--kitgenix-brand);
 }
 
-.kitgenix-table-actions-col {
-  text-align: right !important;
+/* Destination/Short URL columns: cap their width and truncate with an
+   ellipsis instead of wrapping a long URL across several lines, which
+   was inflating row height and pushing the Copy button onto its own
+   line. The full destination is still available via the link's title
+   attribute (a native tooltip on hover). */
+.kitgenix-col-destination {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.kitgenix-table-actions {
+/* display:flex here doesn't break table layout – a table cell's outer
+   display stays table-cell (so column sizing/max-width still apply);
+   only the content inside becomes a flex row. Needed because the code
+   chip and the Copy button are different heights, and plain inline
+   flow only aligns them on the text baseline, not their vertical
+   center. */
+.kitgenix-col-short {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
+  max-width: 220px;
+  white-space: nowrap;
+}
+
+.kitgenix-col-short .kitgenix-code {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kitgenix-code {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--kitgenix-radius-sm);
+  background: var(--kitgenix-bg-light);
+  border: 1px solid var(--kitgenix-border-subtle);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--kitgenix-text-color);
+}
+
+.kitgenix-table-actions-col {
+  text-align: left !important;
+  min-width: 300px;
+}
+
+/* nowrap on purpose: with a definite min-width reserved on the column
+   above, these links should never need to run out of room. If a
+   viewport is too narrow regardless, .kitgenix-table-wrap's
+   overflow-x:auto scrolls the whole table rather than folding this
+   list into a multi-line stack. */
+.kitgenix-table-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+/* Thin dividers between action links (Edit | Duplicate | Check now | ...)
+   so a dense row of same-colored links doesn't read as one run-on phrase. */
+.kitgenix-table-actions a {
+  position: relative;
+  padding: 0 8px;
+}
+
+.kitgenix-table-actions a:first-child {
+  padding-left: 0;
+}
+
+.kitgenix-table-actions a:last-child {
+  padding-right: 0;
+}
+
+.kitgenix-table-actions a + a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 12px;
+  background: var(--kitgenix-border-color);
 }
 
 .kitgenix-table-action-btn {
@@ -2005,11 +2083,31 @@ html #wpbody-content > .wrap.kitgenix-admin-app,
   height: 15px;
 }
 
+/* width: max-content (not just flex:0 0 auto) pins this block to its
+   natural content width by an explicit width value rather than relying
+   on flex-basis resolution – belt and braces against the select-width
+   override below losing any specificity/quirk fight. If the row is too
+   narrow for it alongside the search input and Filter button, it wraps
+   as one unit onto its own line rather than its two children stacking
+   on each other. */
 .kitgenix-search-bar-filters {
   display: flex;
-  flex-wrap: wrap;
+  flex: none;
+  width: max-content;
+  max-width: 100%;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+}
+
+/* The generic form-control rule forces every <select> to width:100%,
+   which is meaningless here without a container to be 100% of – pin an
+   explicit pixel width with !important so it always wins, instead of
+   depending on flex-basis math that a <select>'s special sizing
+   behavior can throw off. */
+.kitgenix-search-bar-filters select {
+  flex: none;
+  width: 160px !important;
 }
 
 .kitgenix-search-bar-actions {
@@ -2236,6 +2334,37 @@ html #wpbody-content > .wrap.kitgenix-admin-app,
    container already provides. */
 .kitgenix-button-group:first-child {
   margin-top: 0;
+}
+
+/* The bulk-actions bar is its own <form>, and .kitgenix-button-group is
+   that form's first (and only) child – which zeroes its margin-top via
+   the :first-child rule above. Put the gap above/below the *form*
+   instead so it doesn't sit flush against the search/filter bar above
+   or the table below. */
+.kitgenix-links-bulk {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Same width:100% issue as the search-bar filters: left unchecked, the
+   bulk-action <select> (and its optional value field) balloon to fill
+   the row instead of sitting beside the Apply button. !important wins
+   over the generic form-control rule without depending on flex-basis
+   math that a <select>'s special sizing behavior can throw off. */
+.kitgenix-button-group select#kitgenix_bulk_action {
+  flex: none;
+  width: 200px !important;
+}
+
+.kitgenix-button-group #kitgenix_bulk_value {
+  flex: none;
+  width: 200px !important;
+}
+
+/* A little more breathing room than the default 10px between the select
+   and the Apply button in this specific bar. */
+.kitgenix-links-bulk .kitgenix-button-group {
+  gap: 14px;
 }
 
 .kitgenix-button-group-end {
