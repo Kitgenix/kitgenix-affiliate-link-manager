@@ -15,8 +15,19 @@ defined( 'ABSPATH' ) || exit;
  */
 final class Event_Log {
 
-    private const OPTION_KEY  = 'kitgenix_affiliate_link_manager_event_log';
-    private const MAX_ENTRIES = 100;
+    private const OPTION_KEY           = 'kitgenix_affiliate_link_manager_event_log';
+    private const MAX_ENTRIES          = 100;
+    private const RETENTION_OPTION_KEY = 'kitgenix_affiliate_link_manager_log_retention_days';
+    private const DEFAULT_RETENTION_DAYS = 30;
+    private const ALLOWED_RETENTION_DAYS = [ 7, 14, 30 ];
+
+    public const PRUNE_CRON_HOOK = 'kitgenix_affiliate_link_manager_prune_event_log';
+
+    /** Wire up the daily housekeeping cron that prunes aged-out log entries. */
+    public static function init(): void {
+        add_action( 'init', [ __CLASS__, 'maybe_schedule_prune' ] );
+        add_action( self::PRUNE_CRON_HOOK, [ __CLASS__, 'prune' ] );
+    }
 
     /**
      * Record an event to the log.
@@ -40,7 +51,69 @@ final class Event_Log {
             $log = array_slice( $log, -self::MAX_ENTRIES );
         }
 
+        $log = self::prune_expired_entries( $log );
+
         update_option( self::OPTION_KEY, $log, false );
+    }
+
+    /**
+     * Number of days log entries are kept before being auto-deleted (7, 14, or 30).
+     */
+    public static function get_retention_days(): int {
+        $days = (int) get_option( self::RETENTION_OPTION_KEY, self::DEFAULT_RETENTION_DAYS );
+        return in_array( $days, self::ALLOWED_RETENTION_DAYS, true ) ? $days : self::DEFAULT_RETENTION_DAYS;
+    }
+
+    /**
+     * Update the log retention window. Invalid values fall back to the default.
+     */
+    public static function update_retention_days( int $days ): void {
+        $days = in_array( $days, self::ALLOWED_RETENTION_DAYS, true ) ? $days : self::DEFAULT_RETENTION_DAYS;
+        update_option( self::RETENTION_OPTION_KEY, $days, false );
+    }
+
+    /**
+     * Remove log entries older than the configured retention window. Runs on the daily
+     * housekeeping cron so logs still decay on a quiet site with no new events, in
+     * addition to the age check already applied whenever a new entry is recorded.
+     */
+    public static function prune(): void {
+        $log    = self::get_raw_log();
+        $pruned = self::prune_expired_entries( $log );
+
+        if ( count( $pruned ) !== count( $log ) ) {
+            update_option( self::OPTION_KEY, $pruned, false );
+        }
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $log
+     * @return array<int,array<string,mixed>>
+     */
+    private static function prune_expired_entries( array $log ): array {
+        $cutoff = time() - ( self::get_retention_days() * DAY_IN_SECONDS );
+
+        return array_values(
+            array_filter(
+                $log,
+                static function ( $entry ) use ( $cutoff ) {
+                    $time = isset( $entry['time'] ) ? (int) $entry['time'] : 0;
+                    return $time >= $cutoff;
+                }
+            )
+        );
+    }
+
+    /** Schedule the daily prune cron if it is not already scheduled. */
+    public static function maybe_schedule_prune(): void {
+        if ( ! wp_next_scheduled( self::PRUNE_CRON_HOOK ) ) {
+            wp_schedule_event( time(), 'daily', self::PRUNE_CRON_HOOK );
+        }
+    }
+
+    /** Unschedule the daily prune cron. */
+    public static function clear_scheduled_prune(): void {
+        wp_clear_scheduled_hook( self::PRUNE_CRON_HOOK );
     }
 
     /**

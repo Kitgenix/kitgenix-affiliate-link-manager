@@ -10,6 +10,7 @@ class Loader {
         Analytics::init();
         Redirector::init();
         Health_Checks::init();
+        Event_Log::init();
         Rest_API::init();
 
         if ( class_exists( __NAMESPACE__ . '\\CLI_Command' ) ) {

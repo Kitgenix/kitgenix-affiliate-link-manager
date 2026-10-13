@@ -85,6 +85,7 @@ $kitgenix_affiliate_delete_site_data_for_current_site = static function (): void
 	delete_option( 'kitgenix_affiliate_link_manager_health_summary' );
 	delete_option( 'kitgenix_affiliate_link_manager_health_cursor' );
 	delete_option( 'kitgenix_affiliate_link_manager_event_log' );
+	delete_option( 'kitgenix_affiliate_link_manager_log_retention_days' );
 
 	delete_transient( 'kitgenix_affiliate_link_manager_do_activation_redirect' );
 	delete_transient( 'kitgenix_affiliate_link_manager_do_rewrite_flush' );

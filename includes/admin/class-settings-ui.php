@@ -31,6 +31,7 @@ class Settings_UI {
         \add_action( 'admin_post_kitgenix_affiliate_run_health_checks_now', [ __CLASS__, 'handle_run_health_checks_now' ] );
         \add_action( 'admin_post_kitgenix_affiliate_link_import', [ __CLASS__, 'handle_link_import' ] );
         \add_action( 'admin_post_kitgenix_affiliate_link_manager_clear_event_log', [ __CLASS__, 'handle_clear_event_log' ] );
+        \add_action( 'admin_post_kitgenix_affiliate_link_manager_save_log_retention', [ __CLASS__, 'handle_save_log_retention' ] );
         \add_action( 'update_option_' . Settings::OPTION_NAME, [ __CLASS__, 'on_settings_saved' ], 10, 3 );
     }
 
@@ -772,6 +773,7 @@ class Settings_UI {
             . '<div class="kitgenix-button-group kitgenix-button-group-stack">'
             . '<a class="button button-secondary" href="' . \esc_url( 'https://kitgenix.com/plugins/kitgenix-affiliate-link-manager/documentation/' ) . '" target="_blank" rel="noopener noreferrer">' . \esc_html__( 'Documentation', 'kitgenix-affiliate-link-manager' ) . '</a>'
             . '<a class="button button-primary" href="' . \esc_url( 'https://wordpress.org/support/plugin/kitgenix-affiliate-link-manager/' ) . '" target="_blank" rel="noopener noreferrer">' . \esc_html__( 'Request Support', 'kitgenix-affiliate-link-manager' ) . '</a>'
+            . '<a class="button button-secondary" href="' . \esc_url( 'https://roadmap.kitgenix.com/?product=affiliate-link-manager' ) . '" target="_blank" rel="noopener noreferrer">' . \esc_html__( 'Request a Feature', 'kitgenix-affiliate-link-manager' ) . '</a>'
             . '</div>'
             . '</div></div>';
 
@@ -2709,14 +2711,19 @@ class Settings_UI {
         if ( isset( $_GET['kitgenix_log_cleared'] ) ) {
             self::notice( __( 'Event log cleared.', 'kitgenix-affiliate-link-manager' ), 'success' );
         }
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( isset( $_GET['kitgenix_log_retention_saved'] ) ) {
+            self::notice( __( 'Log auto-delete setting saved.', 'kitgenix-affiliate-link-manager' ), 'success' );
+        }
 
         $clear_url = \wp_nonce_url(
             \admin_url( 'admin-post.php?action=kitgenix_affiliate_link_manager_clear_event_log' ),
             'kitgenix_affiliate_link_manager_clear_event_log'
         );
 
-        $log_entries = Event_Log::get_raw_log();
-        $time_format = (string) \get_option( 'date_format' ) . ' ' . (string) \get_option( 'time_format' );
+        $log_entries     = Event_Log::get_raw_log();
+        $time_format     = (string) \get_option( 'date_format' ) . ' ' . (string) \get_option( 'time_format' );
+        $retention_days  = Event_Log::get_retention_days();
 
         echo '<div class="kitgenix-card">';
         echo '<div class="kitgenix-card-head"><div>'
@@ -2729,6 +2736,26 @@ class Settings_UI {
         echo '</div>'; // .kitgenix-card-head
 
         echo '<div class="kitgenix-card-body">';
+
+        echo '<div class="kitgenix-setting-row">'
+            . '<div class="kitgenix-setting-row-label"><label for="kitgenix_log_retention_days">' . \esc_html__( 'Auto-delete logs after', 'kitgenix-affiliate-link-manager' ) . '</label>'
+            . '<p class="kitgenix-setting-row-desc">' . \esc_html__( 'Log entries older than the selected period are removed automatically.', 'kitgenix-affiliate-link-manager' ) . '</p>'
+            . '</div>'
+            . '<div class="kitgenix-setting-row-control">'
+            . '<form method="post" action="' . \esc_url( \admin_url( 'admin-post.php' ) ) . '">'
+            . '<input type="hidden" name="action" value="kitgenix_affiliate_link_manager_save_log_retention" />';
+
+        \wp_nonce_field( 'kitgenix_affiliate_link_manager_save_log_retention' );
+
+        echo '<select id="kitgenix_log_retention_days" name="retention_days">'
+            . '<option value="7"' . \selected( $retention_days, 7, false ) . '>' . \esc_html__( '7 days', 'kitgenix-affiliate-link-manager' ) . '</option>'
+            . '<option value="14"' . \selected( $retention_days, 14, false ) . '>' . \esc_html__( '14 days', 'kitgenix-affiliate-link-manager' ) . '</option>'
+            . '<option value="30"' . \selected( $retention_days, 30, false ) . '>' . \esc_html__( '30 days', 'kitgenix-affiliate-link-manager' ) . '</option>'
+            . '</select> '
+            . '<button type="submit" class="button button-secondary">' . \esc_html__( 'Save', 'kitgenix-affiliate-link-manager' ) . '</button>'
+            . '</form>'
+            . '</div>'
+            . '</div>';
 
         if ( empty( $log_entries ) ) {
             echo '<div class="kitgenix-empty-state">'
@@ -2840,6 +2867,19 @@ class Settings_UI {
         \check_admin_referer( 'kitgenix_affiliate_link_manager_clear_event_log' );
         Event_Log::clear();
         \wp_safe_redirect( \admin_url( 'admin.php?page=kitgenix-affiliate-link-manager&tab=log&kitgenix_log_cleared=1' ) );
+        exit;
+    }
+
+    public static function handle_save_log_retention(): void {
+        if ( ! self::user_can_manage_links() ) {
+            \wp_die( \esc_html__( 'Permission denied.', 'kitgenix-affiliate-link-manager' ), 403 );
+        }
+        \check_admin_referer( 'kitgenix_affiliate_link_manager_save_log_retention' );
+
+        $retention_days = isset( $_POST['retention_days'] ) ? \absint( \wp_unslash( $_POST['retention_days'] ) ) : 30;
+        Event_Log::update_retention_days( $retention_days );
+
+        \wp_safe_redirect( \admin_url( 'admin.php?page=kitgenix-affiliate-link-manager&tab=log&kitgenix_log_retention_saved=1' ) );
         exit;
     }
 
