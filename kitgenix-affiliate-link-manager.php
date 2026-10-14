@@ -8,7 +8,7 @@
  * Author Support URI: https://kitgenix.com/plugins/kitgenix-affiliate-link-manager/support
  * Feature Request URI: https://kitgenix.com/plugins/kitgenix-affiliate-link-manager/feature-request
  * Description:       Manage affiliate short links, branded redirects, and click tracking from one WordPress dashboard.
- * Version:           2.1.0
+ * Version:           2.1.2
  * Requires at least: 6.0
  * Tested up to:      7.1
  * Requires PHP:      8.1
@@ -702,7 +702,7 @@ add_action( 'admin_enqueue_scripts', function ( string $hook_suffix ): void {
  * Constants (guarded)
  */
 if ( ! defined( 'KitgenixAffiliateLinkManager_Version' ) ) {
-    define( 'KitgenixAffiliateLinkManager_Version', '2.1.0' );
+    define( 'KitgenixAffiliateLinkManager_Version', '2.1.2' );
 }
 if ( ! defined( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION' ) ) {
     define( 'KITGENIX_AFFILIATE_LINK_MANAGER_VERSION', KitgenixAffiliateLinkManager_Version );

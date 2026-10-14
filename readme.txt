@@ -5,10 +5,10 @@ Tags: affiliate links, affiliate marketing, link management, click tracking, red
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 2.1.0
+Stable tag: 2.1.2
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
-PluginScore Verification: pluginscore-verify-4eee95b3d694dc84050bcb955aa7a88c
+PluginScore Verification: pluginscore-verify-a547bac9e05f02ad6660c9a426428471
 
 Manage branded affiliate links, redirects, click analytics, scheduling, rotation and link health from WordPress.
 
@@ -321,10 +321,18 @@ Kitgenix Affiliate Link Manager is developed by Kitgenix and built on WordPress 
 
 == Upgrade Notice ==
 
-= 2.1.0 =
-Version 2.1.0 is recommended for all sites.
+= 2.1.2 =
+Version 2.1.2 is recommended for all sites.
 
 == Changelog ==
+
+= 2.1.2 (13 October 2026) =
+
+* Fix: Bump version to 2.1.2 across the plugin.
+
+= 2.1.1 (13 October 2026) =
+
+* Fix: Updated PluginScore Verification code.
 
 = 2.1.0 (13 October 2026) =
 
